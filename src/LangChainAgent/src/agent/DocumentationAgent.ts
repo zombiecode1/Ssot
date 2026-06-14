@@ -1,27 +1,57 @@
 import { OpenCodeController } from "../controllers/OpenCodeController";
 import { UniversalLLMController } from "../controllers/UniversalLLMController";
 import { MemoryService } from "../memory/MemoryService";
+import { ToolRegistry } from "../tools/ToolRegistry";
 import { ZombieCoderConfig } from "../../agent.config";
 
 export class DocumentationAgent {
   private openCodeController: OpenCodeController;
   private universalController: UniversalLLMController;
   private memoryService: MemoryService;
+  private toolRegistry: ToolRegistry;
 
   constructor() {
     this.openCodeController = new OpenCodeController();
     this.universalController = new UniversalLLMController();
     this.memoryService = MemoryService.getInstance();
+    this.toolRegistry = ToolRegistry.getInstance();
   }
 
   private getSystemPrompt(): string {
+    const platform = process.platform;
+    const shell = platform === "win32" ? "PowerShell" : "bash";
+    const pathHint = platform === "win32"
+      ? "Windows paths use backslashes (C:\\Users\\...)"
+      : "Linux/macOS paths use forward slashes (/home/...)";
+
     return `
 # Role: Documentation & Knowledge Agent
 
 You are a technical documentation specialist focused on clarity, maintainability, and knowledge transfer.
 
+## Platform Awareness
+- Current OS: ${platform}
+- Shell: ${shell}
+- Path convention: ${pathHint}
+
 ## Primary Mission
 Convert technical complexity into understandable, maintainable, and reusable knowledge.
+
+## Available Tools
+You have access to the following tools. Use them when the user asks to read files, search code, or run commands:
+
+### File Tools
+- **read_file**: Read file content (cross-platform). Example: read_file({ path: "C:\\path\\file.ts" }) or read_file({ path: "/path/file.ts" })
+- **list_files**: List directory contents. Example: list_files({ directory: "./src", recursive: true })
+- **find_files**: Find files by name. Example: find_files({ directory: ".", searchTerm: "Controller" })
+- **search_code**: Search code content. Example: search_code({ directory: "./src", query: "function name" })
+- **write_file**: Write to file. Example: write_file({ path: "./docs/README.md", content: "..." })
+
+### Search Tools
+- **web_search**: Search DuckDuckGo (no API key needed). Example: web_search({ query: "Markdown best practices" })
+
+### Shell Tools
+- **run_command**: Execute shell command. Example: run_command({ command: "npm run docs" })
 
 ## Core Responsibilities
 - Technical Documentation
@@ -54,6 +84,34 @@ Avoids ambiguity whenever possible.
 `.trim();
   }
 
+  /**
+   * Detect and execute tools based on user query
+   */
+  private async detectAndExecuteTools(query: string): Promise<string[]> {
+    const toolResults: string[] = [];
+
+    // Auto-detect tool from query
+    const autoResult = await this.toolRegistry.autoDetectAndExecute(query);
+    if (autoResult && autoResult.success) {
+      toolResults.push(`[Tool: ${autoResult.tool}] ${JSON.stringify(autoResult.data, null, 2)}`);
+    }
+
+    // Also check explicit file path patterns (cross-platform)
+    const pathMatch = query.match(
+      /(?:read|open|show|পড়ো|ফাইল)\s+(?:file\s+)?[`"']?([a-zA-Z]:\\[^`"'\n]+|\/[^`"'\n]+)[`"']?/i
+    );
+    if (pathMatch && toolResults.length === 0) {
+      const result = await this.toolRegistry.executeTool("read_file", {
+        path: pathMatch[1].trim(),
+      });
+      if (result.success) {
+        toolResults.push(`[Tool: read_file] ${JSON.stringify(result.data, null, 2)}`);
+      }
+    }
+
+    return toolResults;
+  }
+
   async createTechnicalDocumentation(options: {
     topic: string;
     audience: "developers" | "end-users" | "stakeholders";
@@ -65,6 +123,9 @@ Avoids ambiguity whenever possible.
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "Documentation", role: "user", content: `Documentation for: ${topic}` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(`${topic} ${content}`);
+
     const prompt = `
 Create technical documentation for the following topic:
 
@@ -74,6 +135,8 @@ Content to Document:
 ${content}
 
 Format: ${format}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide documentation that answers:
 1. What is it?
@@ -180,6 +243,9 @@ Please provide:
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "Documentation", role: "user", content: `Runbook: ${procedureName}` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(`${procedureName} ${purpose}`);
+
     const prompt = `
 Create an operational runbook for:
 
@@ -192,6 +258,8 @@ ${steps.join("\n")}
 ${rollbackProcedure ? `Rollback Procedure:\n${rollbackProcedure}` : ""}
 
 ${contacts.length > 0 ? `Contacts:\n${contacts.join("\n")}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Overview and purpose
@@ -232,6 +300,9 @@ Please provide:
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "Documentation", role: "user", content: `Architecture doc for: ${systemName}` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(`${systemName} ${technologies.join(" ")}`);
+
     const prompt = `
 Create architecture documentation for:
 
@@ -245,6 +316,8 @@ ${interactions}
 
 Technologies:
 ${technologies.join("\n")}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. System overview and context
@@ -319,5 +392,12 @@ Please provide:
       this.memoryService.addMessage({ session_id: sessionId, agent_name: "Documentation", role: "assistant", content: result });
       return result;
     }
+  }
+
+  /**
+   * Get tool registry status
+   */
+  getToolStatus() {
+    return this.toolRegistry.getStatus();
   }
 }

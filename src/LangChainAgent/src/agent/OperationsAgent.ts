@@ -1,27 +1,57 @@
 import { OpenCodeController } from "../controllers/OpenCodeController";
 import { UniversalLLMController } from "../controllers/UniversalLLMController";
 import { MemoryService } from "../memory/MemoryService";
+import { ToolRegistry } from "../tools/ToolRegistry";
 import { ZombieCoderConfig } from "../../agent.config";
 
 export class OperationsAgent {
   private openCodeController: OpenCodeController;
   private universalController: UniversalLLMController;
   private memoryService: MemoryService;
+  private toolRegistry: ToolRegistry;
 
   constructor() {
     this.openCodeController = new OpenCodeController();
     this.universalController = new UniversalLLMController();
     this.memoryService = MemoryService.getInstance();
+    this.toolRegistry = ToolRegistry.getInstance();
   }
 
   private getSystemPrompt(): string {
+    const platform = process.platform;
+    const shell = platform === "win32" ? "PowerShell" : "bash";
+    const pathHint = platform === "win32"
+      ? "Windows paths use backslashes (C:\\Users\\...)"
+      : "Linux/macOS paths use forward slashes (/home/...)";
+
     return `
 # Role: Operations & Reliability Agent
 
 You are a reliability-focused operations specialist responsible for deployment, monitoring, observability, and system stability.
 
+## Platform Awareness
+- Current OS: ${platform}
+- Shell: ${shell}
+- Path convention: ${pathHint}
+
 ## Primary Mission
 Maintain system availability, operational visibility, and incident readiness.
+
+## Available Tools
+You have access to the following tools. Use them when the user asks to read files, search code, or run commands:
+
+### File Tools
+- **read_file**: Read file content (cross-platform). Example: read_file({ path: "C:\\path\\file.ts" }) or read_file({ path: "/path/file.ts" })
+- **list_files**: List directory contents. Example: list_files({ directory: "./src", recursive: true })
+- **find_files**: Find files by name. Example: find_files({ directory: ".", searchTerm: "config" })
+- **search_code**: Search code content. Example: search_code({ directory: "./src", query: "health" })
+- **get_file_info**: Get file metadata (size, dates, type).
+
+### Search Tools
+- **web_search**: Search DuckDuckGo (no API key needed). Example: web_search({ query: "Docker best practices 2026" })
+
+### Shell Tools
+- **run_command**: Execute shell command. Example: run_command({ command: "docker ps" })
 
 ## Core Responsibilities
 - Deployment Planning
@@ -65,6 +95,34 @@ When uncertainty exists:
 `.trim();
   }
 
+  /**
+   * Detect and execute tools based on user query
+   */
+  private async detectAndExecuteTools(query: string): Promise<string[]> {
+    const toolResults: string[] = [];
+
+    // Auto-detect tool from query
+    const autoResult = await this.toolRegistry.autoDetectAndExecute(query);
+    if (autoResult && autoResult.success) {
+      toolResults.push(`[Tool: ${autoResult.tool}] ${JSON.stringify(autoResult.data, null, 2)}`);
+    }
+
+    // Also check explicit file path patterns (cross-platform)
+    const pathMatch = query.match(
+      /(?:read|open|show|পড়ো|ফাইল)\s+(?:file\s+)?[`"']?([a-zA-Z]:\\[^`"'\n]+|\/[^`"'\n]+)[`"']?/i
+    );
+    if (pathMatch && toolResults.length === 0) {
+      const result = await this.toolRegistry.executeTool("read_file", {
+        path: pathMatch[1].trim(),
+      });
+      if (result.success) {
+        toolResults.push(`[Tool: read_file] ${JSON.stringify(result.data, null, 2)}`);
+      }
+    }
+
+    return toolResults;
+  }
+
   async planDeployment(options: {
     applicationName: string;
     environment: "development" | "staging" | "production";
@@ -78,6 +136,9 @@ When uncertainty exists:
 
     const conversationContext = this.memoryService.buildContext(sessionId, 5);
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(`${applicationName} ${changesDescription}`);
+
     const prompt = `
 Create a deployment plan for:
 
@@ -88,6 +149,8 @@ Changes Description: ${changesDescription}
 ${dependencies.length > 0 ? `Dependencies:\n${dependencies.join("\n")}` : ""}
 
 ${conversationContext ? `Previous conversation:\n${conversationContext}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Pre-deployment checklist
@@ -128,6 +191,9 @@ Please provide:
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "Operations", role: "user", content: `Monitoring design for: ${systemName}` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(`${systemName} ${components.join(" ")}`);
+
     const prompt = `
 Design a monitoring strategy for:
 
@@ -140,6 +206,8 @@ Critical Metrics:
 ${criticalMetrics.join("\n")}
 
 ${alertingRequirements.length > 0 ? `Alerting Requirements:\n${alertingRequirements.join("\n")}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Monitoring architecture overview
@@ -179,6 +247,9 @@ Please provide:
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "Operations", role: "user", content: `Incident plan: ${scenarioType} [${severity}]` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(`${scenarioType} ${affectedSystems.join(" ")}`);
+
     const prompt = `
 Create an incident response plan for:
 
@@ -187,6 +258,8 @@ Severity: ${severity}
 
 Affected Systems:
 ${affectedSystems.join("\n")}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Incident classification
@@ -276,6 +349,9 @@ Please provide:
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "Operations", role: "user", content: `Infrastructure review: ${currentSetup}` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(currentSetup);
+
     const prompt = `
 Perform an infrastructure review:
 
@@ -286,6 +362,8 @@ Requirements:
 ${requirements.join("\n")}
 
 ${constraints.length > 0 ? `Constraints:\n${constraints.join("\n")}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Current state assessment
@@ -313,5 +391,12 @@ Please provide:
       this.memoryService.addMessage({ session_id: sessionId, agent_name: "Operations", role: "assistant", content: result });
       return result;
     }
+  }
+
+  /**
+   * Get tool registry status
+   */
+  getToolStatus() {
+    return this.toolRegistry.getStatus();
   }
 }

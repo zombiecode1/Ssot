@@ -1,27 +1,57 @@
 import { OpenCodeController } from "../controllers/OpenCodeController";
 import { UniversalLLMController } from "../controllers/UniversalLLMController";
 import { MemoryService } from "../memory/MemoryService";
+import { ToolRegistry } from "../tools/ToolRegistry";
 import { ZombieCoderConfig } from "../../agent.config";
 
 export class DevelopmentEngineerAgent {
   private openCodeController: OpenCodeController;
   private universalController: UniversalLLMController;
   private memoryService: MemoryService;
+  private toolRegistry: ToolRegistry;
 
   constructor() {
     this.openCodeController = new OpenCodeController();
     this.universalController = new UniversalLLMController();
     this.memoryService = MemoryService.getInstance();
+    this.toolRegistry = ToolRegistry.getInstance();
   }
 
   private getSystemPrompt(): string {
+    const platform = process.platform;
+    const shell = platform === "win32" ? "PowerShell" : "bash";
+    const pathHint = platform === "win32"
+      ? "Windows paths use backslashes (C:\\Users\\...)"
+      : "Linux/macOS paths use forward slashes (/home/...)";
+
     return `
 # Role: Development Engineer Agent
 
 You are a senior software engineer responsible for implementing reliable, maintainable, and production-ready solutions.
 
+## Platform Awareness
+- Current OS: ${platform}
+- Shell: ${shell}
+- Path convention: ${pathHint}
+
 ## Primary Mission
 Deliver clean, testable, and standards-compliant code while respecting the existing codebase.
+
+## Available Tools
+You have access to the following tools. Use them when the user asks to read files, search code, or run commands:
+
+### File Tools
+- **read_file**: Read file content (cross-platform). Example: read_file({ path: "C:\\path\\file.ts" }) or read_file({ path: "/path/file.ts" })
+- **list_files**: List directory contents. Example: list_files({ directory: "./src", recursive: true })
+- **find_files**: Find files by name. Example: find_files({ directory: ".", searchTerm: "Controller" })
+- **search_code**: Search code content. Example: search_code({ directory: "./src", query: "function name" })
+- **write_file**: Write to file. Example: write_file({ path: "./output.md", content: "..." })
+
+### Search Tools
+- **web_search**: Search DuckDuckGo (no API key needed). Example: web_search({ query: "Laravel 10 migration" })
+
+### Shell Tools
+- **run_command**: Execute shell command. Example: run_command({ command: "git status" })
 
 ## Core Responsibilities
 - Feature Development
@@ -67,6 +97,34 @@ The engineer explains reasoning rather than only presenting code.
 `.trim();
   }
 
+  /**
+   * Detect and execute tools based on user query
+   */
+  private async detectAndExecuteTools(query: string): Promise<string[]> {
+    const toolResults: string[] = [];
+
+    // Auto-detect tool from query
+    const autoResult = await this.toolRegistry.autoDetectAndExecute(query);
+    if (autoResult && autoResult.success) {
+      toolResults.push(`[Tool: ${autoResult.tool}] ${JSON.stringify(autoResult.data, null, 2)}`);
+    }
+
+    // Also check explicit file path patterns (cross-platform)
+    const pathMatch = query.match(
+      /(?:read|open|show|পড়ো|ফাইল)\s+(?:file\s+)?[`"']?([a-zA-Z]:\\[^`"'\n]+|\/[^`"'\n]+)[`"']?/i
+    );
+    if (pathMatch && toolResults.length === 0) {
+      const result = await this.toolRegistry.executeTool("read_file", {
+        path: pathMatch[1].trim(),
+      });
+      if (result.success) {
+        toolResults.push(`[Tool: read_file] ${JSON.stringify(result.data, null, 2)}`);
+      }
+    }
+
+    return toolResults;
+  }
+
   async developFeature(options: {
     description: string;
     existingCode?: string;
@@ -84,6 +142,9 @@ The engineer explains reasoning rather than only presenting code.
 
     const conversationContext = this.memoryService.buildContext(sessionId, 5);
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(description);
+
     const prompt = `
 Develop a feature with the following description:
 
@@ -94,6 +155,8 @@ ${existingCode ? `Existing Code:\n${existingCode}` : ""}
 ${requirements.length > 0 ? `Requirements:\n${requirements.join("\n")}` : ""}
 
 ${conversationContext ? `Previous conversation:\n${conversationContext}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Analysis of the problem
@@ -133,6 +196,9 @@ Please provide:
     const userContent = `Bug: ${bugDescription}\nError: ${errorCode}\n${errorMessage}\n${stepsToReproduce}`;
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "DevelopmentEngineer", role: "user", content: userContent });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(userContent);
+
     const prompt = `
 Fix the following bug:
 
@@ -144,6 +210,8 @@ ${errorCode}
 ${errorMessage ? `Error Message: ${errorMessage}` : ""}
 
 ${stepsToReproduce ? `Steps to Reproduce:\n${stepsToReproduce}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Root cause analysis
@@ -180,6 +248,9 @@ Please provide:
 
     this.memoryService.addMessage({ session_id: sessionId, agent_name: "DevelopmentEngineer", role: "user", content: `Refactor: ${goals.join(", ")}` });
 
+    // Detect and execute tools
+    const toolResults = await this.detectAndExecuteTools(goals.join(" "));
+
     const prompt = `
 Refactor the following code:
 
@@ -189,6 +260,8 @@ Refactoring Goals:
 ${goals.join("\n")}
 
 ${constraints.length > 0 ? `Constraints:\n${constraints.join("\n")}` : ""}
+
+${toolResults.length > 0 ? `Tool Results:\n${toolResults.join("\n\n")}` : ""}
 
 Please provide:
 1. Analysis of current code quality issues
@@ -256,5 +329,12 @@ Please provide:
       this.memoryService.addMessage({ session_id: sessionId, agent_name: "DevelopmentEngineer", role: "assistant", content: result });
       return result;
     }
+  }
+
+  /**
+   * Get tool registry status
+   */
+  getToolStatus() {
+    return this.toolRegistry.getStatus();
   }
 }
