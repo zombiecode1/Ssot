@@ -3,728 +3,621 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧟 ZombieCoder — যেখানে কোড ও কথা বলে</title>
+    <title>ZombieCoder — যেখানে হারানো স্বপ্নগুলো আবার বাঁচে ওঠে</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #10b981;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --darker: #0f172a;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --border: #e2e8f0;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
-            color: var(--light);
-            line-height: 1.8;
+            font-family: 'Noto Sans Bengali', 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.9;
+            font-size: 17px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Header */
-        header {
-            background: rgba(30, 41, 59, 0.95);
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            position: relative;
+            overflow: hidden;
             padding: 40px 20px;
-            text-align: center;
-            border-bottom: 3px solid var(--primary);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
         }
 
-        header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-emoji {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
-        header .tagline {
+        .hero .subtitle {
+            font-size: 1.4em;
+            color: #94a3b8;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        .hero .quote {
+            font-size: 1.1em;
+            color: #f59e0b;
+            font-style: italic;
+            border-left: 3px solid #f59e0b;
+            padding-left: 20px;
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Content Sections */
+        .section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 30px;
+        }
+
+        .section h2 {
+            font-size: 2em;
+            color: #818cf8;
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #818cf8, #34d399);
+        }
+
+        .section p {
+            margin-bottom: 25px;
+            color: #cbd5e1;
+        }
+
+        /* Story Cards */
+        .story-card {
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            border-radius: 16px;
+            padding: 35px;
+            margin: 30px 0;
+            border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #818cf8, #34d399);
+        }
+
+        .story-card .name {
             font-size: 1.3em;
-            color: var(--accent);
+            color: #f59e0b;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .story-card .role {
+            font-size: 0.9em;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        .story-card .story {
+            color: #e2e8f0;
             font-style: italic;
         }
 
-        /* Navigation */
-        nav {
-            background: rgba(15, 23, 42, 0.95);
-            padding: 15px;
-            position: sticky;
-            top: 120px;
-            z-index: 999;
-            border-bottom: 2px solid var(--border);
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        nav a {
-            color: var(--light);
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            background: var(--dark);
-        }
-
-        nav a:hover {
-            background: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        /* Sections */
-        section {
-            background: rgba(30, 41, 59, 0.8);
-            margin: 30px 0;
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        h2 {
-            color: var(--primary);
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        h3 {
-            color: var(--secondary);
-            font-size: 1.4em;
-            margin: 20px 0 10px;
-        }
-
-        /* Cards */
-        .card-grid {
+        /* Feature Grid */
+        .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
         }
 
-        .card {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 25px;
+        .feature-item {
+            background: #1a1a2e;
+            padding: 30px;
             border-radius: 12px;
-            border: 1px solid var(--border);
+            border: 1px solid #2d2d44;
             transition: all 0.3s ease;
         }
 
-        .card:hover {
+        .feature-item:hover {
+            border-color: #818cf8;
             transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
         }
 
-        .card h4 {
-            color: var(--accent);
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        .card-icon {
+        .feature-item .icon {
             font-size: 2.5em;
             margin-bottom: 15px;
         }
 
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: rgba(15, 23, 42, 0.5);
+        .feature-item h4 {
+            color: #818cf8;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-item p {
+            color: #94a3b8;
+            font-size: 0.95em;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #818cf8, #34d399);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #1a1a2e;
             border-radius: 12px;
-            overflow: hidden;
+            border: 1px solid #2d2d44;
         }
 
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -33px;
+            top: 30px;
+            width: 12px;
+            height: 12px;
+            background: #818cf8;
+            border-radius: 50%;
+            border: 3px solid #0a0a0a;
         }
 
-        th {
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-        }
-
-        tr:hover {
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        /* Code blocks */
-        pre {
-            background: var(--darker);
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 15px 0;
-            border: 1px solid var(--border);
-        }
-
-        code {
-            font-family: 'Consolas', 'Monaco', monospace;
-            color: var(--secondary);
-        }
-
-        /* Lists */
-        ul, ol {
-            margin: 15px 0;
-            padding-left: 30px;
-        }
-
-        li {
-            margin: 8px 0;
-        }
-
-        /* Badges */
-        .badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin: 3px;
-        }
-
-        .badge-success {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .badge-warning {
-            background: var(--accent);
-            color: var(--dark);
-        }
-
-        .badge-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .badge-info {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Architecture Diagram */
-        .architecture {
-            background: var(--darker);
-            padding: 30px;
-            border-radius: 12px;
-            font-family: monospace;
-            white-space: pre;
-            overflow-x: auto;
+        .timeline-item .step {
+            color: #34d399;
             font-size: 0.9em;
-            line-height: 1.4;
-            border: 1px solid var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .timeline-item h4 {
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        .timeline-item p {
+            color: #94a3b8;
+            font-size: 0.95em;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            overflow-x: auto;
+            border: 1px solid #21262d;
+        }
+
+        .code-block code {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            color: #7ee787;
+            font-size: 0.95em;
+        }
+
+        .code-block .comment {
+            color: #8b949e;
+        }
+
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+
+        .code-block .string {
+            color: #a5d6ff;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .highlight-box h4 {
+            color: #818cf8;
+            margin-bottom: 15px;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .highlight-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #cbd5e1;
+        }
+
+        .highlight-box li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #34d399;
+            font-weight: bold;
         }
 
         /* Footer */
         footer {
-            background: var(--darker);
-            padding: 40px 20px;
             text-align: center;
-            margin-top: 50px;
-            border-top: 3px solid var(--primary);
+            padding: 60px 30px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+            border-top: 1px solid #2d2d44;
         }
 
-        footer p {
-            color: var(--gray);
-            margin: 10px 0;
+        footer .brand {
+            font-size: 1.8em;
+            color: #818cf8;
+            margin-bottom: 15px;
+        }
+
+        footer .tagline {
+            color: #94a3b8;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        footer .links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        footer a {
+            color: #818cf8;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #34d399;
+        }
+
+        footer .copyright {
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 0.9em;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.8em;
-            }
-
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            section {
-                padding: 20px;
-            }
-
-            .card-grid {
-                grid-template-columns: 1fr;
-            }
+            .hero h1 { font-size: 2.2em; }
+            .hero .subtitle { font-size: 1.1em; }
+            .section { padding: 50px 20px; }
+            .section h2 { font-size: 1.6em; }
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Scroll Animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
         }
 
-        section {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--darker);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>🧟 ZombieCoder</h1>
-        <p class="tagline">"যেখানে কোড ও কথা বলে" — Where code and words come alive</p>
-    </header>
-
-    <nav>
-        <ul>
-            <li><a href="#about">পরিচিতি</a></li>
-            <li><a href="#story">গল্প</a></li>
-            <li><a href="#architecture">আর্কিটেকচার</a></li>
-            <li><a href="#agents">এজেন্ট</a></li>
-            <li><a href="#tools">টুলস</a></li>
-            <li><a href="#ssot">SSOT</a></li>
-            <li><a href="#quickstart">শুরু</a></li>
-            <li><a href="#api">API</a></li>
-        </ul>
-    </nav>
-
-    <div class="container">
-        <!-- About Section -->
-        <section id="about">
-            <h2>📖 ZombieCoder কি?</h2>
-            <p><strong>ZombieCoder</strong> শুধু একটি AI টুল নয় — এটি একটি <strong>আন্দোলন</strong>।</p>
-            
-            <p>এমন একটি সমাজে যেখানে মেধাবী স্বপ্নগুলো সুযোগের অভাবে ধ্বংস হয়ে যায়, যেখানে দক্ষ ব্যক্তিরা "জম্বি" হয়ে যায় — মৃত নয়, বরং মানসিকভাবে পরাজিত — ZombieCoder একটি আশার আলো হিসেবে ওঠে।</p>
-
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-icon">💔</div>
-                    <h4>স্বপ্নবাজরা</h4>
-                    <p>যাদের স্বপ্ন আছে কিন্তু সম্পদ নেই, দক্ষতা আছে কিন্তু স্বীকৃতি নেই</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon">🧟</div>
-                    <h4>জম্বি হওয়া</h4>
-                    <p>ধীরে ধীরে মানসিকভাবে হারিয়ে যাওয়া — কিন্তু এখনও বাঁচা আছে</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon">🌟</div>
-                    <h4>আশার আলো</h4>
-                    <p>"আমি পারি না বলার আগেই আমি চেষ্টা করার সিদ্ধান্ত নিয়েছি"</p>
-                </div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-emoji">🧟</div>
+            <h1>ZombieCoder</h1>
+            <p class="subtitle">যেখানে হারানো স্বপ্নগুলো আবার বাঁচে ওঠে</p>
+            <div class="quote">
+                "সমাজে এবং পরিবারে এবং কাজের জন্য ব্যবহার করা প্রতিটি টুলের কাছ থেকে যখন তার নিজের অজান্তে যন্ত্রণা পেতে পেতে জম্বি হয়ে গিয়েছে কিন্তু অদম্য চিন্তা এবং এই জম্বি হওয়ার কষ্ট তাকে ভুলতে দেয়নি।"
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Story Section -->
-        <section id="story">
-            <h2>📜 নামের পেছনের গল্প</h2>
-            
-            <p><strong>"জম্বি"</strong> শব্দটি এখানে মৃতদেহকে বোঝায় না। এটি প্রতিনিধিত্ব করে <strong>কোটি কোটি মানুষের</strong> যারা:</p>
+    <!-- Story Section -->
+    <section class="section fade-in">
+        <h2>নামের পেছনের গল্প</h2>
+        
+        <p>
+            "জম্বি" শব্দটি এখানে মৃতদেহকে বোঝায় না। এটি প্রতিনিধিত্ব করে কোটি কোটি মানুষের — যারা প্রতিদিন জাগে, কাজ করে, হারিয়ে যায়, আবার ওঠে। তারা "জম্বি" নয়, তারা শুধু ক্লান্ত।
+        </p>
 
-            <ul>
-                <li>💔 স্বপ্ন আছে কিন্তু সম্পদ নেই</li>
-                <li>🎯 দক্ষতা আছে কিন্তু স্বীকৃতি নেই</li>
-                <li>😔 ধীরে ধীরে "জম্বি" হয়ে যাচ্ছে — মানসিকভাবে হারিয়ে গিয়ে</li>
-                <li>🌟 এখনও বিশ্বাস করে: "আমি চেষ্টা করতে পারি, এমনকি হেরে গেলেও"</li>
-            </ul>
+        <p>
+            এমন একটি সমাজে যেখানে মেধাবী স্বপ্নগুলো সুযোগের অভাবে ধ্বংস হয়ে যায়, যেখানে দক্ষ ব্যক্তিরা ধীরে ধীরে মানসিকভাবে পরাজিত হয়ে যায় — ZombieCoder একটি আশার আলো হিসেবে ওঠে। এটি এমন একটি টুল যেটি আপনার পাশে দাঁড়ায়, আপনাকে বিচার করে না, এবং বলে — "আরেকবার চেষ্টা করো।"
+        </p>
+    </section>
 
-            <p><strong>ZombieCoder</strong> তাদের জন্য যারা হার মানতে রাজি নয়। এটি এমন একটি টুল যেটি:</p>
-
-            <ul>
-                <li>✅ আপনার ভুল স্বীকার করে (অন্যান্য AI যেগুলো ভুল লুকায়)</li>
-                <li>✅ ব্যর্থতা থেকে শেখে (প্রতিটি চেষ্টা নতুন কিছু শেখায়)</li>
-                <li>✅ কখনো বিচার করে না (সমাজ যেটুকু টাকা দিয়ে সফলতা মাপে)</li>
-                <li>✅ সবসময় আবার চেষ্টা করে (কারণ সত্যিকারের সাহস এটাই)</li>
-            </ul>
-
-            <blockquote style="background: var(--darker); padding: 20px; border-left: 4px solid var(--accent); margin: 20px 0; border-radius: 8px;">
-                <p>"সমাজে এবং পরিবারে এবং কাজের জন্য ব্যবহার করা প্রতিটি টুলের কাছ থেকে যখন তার নিজের অজান্তে যন্ত্রণা পেতে পেতে জম্বি হয়ে গিয়েছে কিন্তু অদম্য চিন্তা এবং এই জম্বি হওয়ার কষ্ট তাকে ভুলতে দেয়নি।"</p>
-            </blockquote>
-        </section>
-
-        <!-- Architecture Section -->
-        <section id="architecture">
-            <h2>🏗️ সিস্টেম আর্কিটেকচার</h2>
-            
-            <div class="architecture">
-┌─────────────────────────────────────────────────────────────────┐
-│                    ZombieCoder এজেন্ট সিস্টেম                    │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   মেমরি     │  │    RAG      │  │   টুলস     │             │
-│  │  (SQLite)   │  │  (SSOT.md)  │  │ (৯টি টুল)  │             │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
-│         │                │                │                       │
-│         └────────────────┼────────────────┘                       │
-│                          │                                        │
-│                    ┌─────▼─────┐                                 │
-│                    │  টুল      │                                 │
-│                    │ রেজিস্ট্রি │                                 │
-│                    └─────┬─────┘                                 │
-│                          │                                        │
-│              ┌───────────┼───────────┐                           │
-│              │           │           │                            │
-│         ┌────▼────┐ ┌────▼────┐ ┌────▼────┐                     │
-│         │  ফাইল   │ │ সার্চ   │ │  শেল    │                     │
-│         │  টুলস   │ │ (DDG)   │ │  টুলস   │                     │
-│         └─────────┘ └─────────┘ └─────────┘                     │
-│                                                                   │
-└─────────────────────────────────────────────────────────────────┘</div>
-        </section>
-
-        <!-- Agents Section -->
-        <section id="agents">
-            <h2>🤖 আমাদের এজেন্টগুলো</h2>
-            
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-icon">🏛️</div>
-                    <h4>সলিউশন আর্কিটেক্ট এজেন্ট</h4>
-                    <p><strong>ভূমিকা:</strong> সিস্টেম ডিজাইন, স্কেলেবিলিটি, প্রযুক্তিগত সিদ্ধান্ত</p>
-                    <p><strong>মডেল:</strong> <span class="badge badge-info">nemotron-3-ultra-free</span></p>
-                    <p><strong>ক্ষমতা:</strong> ADR তৈরি, ডাটাবেস ডিজাইন, আর্কিটেকচার রিভিউ</p>
-                </div>
-                
-                <div class="card">
-                    <div class="card-icon">💻</div>
-                    <h4>ডেভেলপমেন্ট ইঞ্জিনিয়ার এজেন্ট</h4>
-                    <p><strong>ভূমিকা:</strong> কোড বাস্তবায়ন, ডিবাগিং, অপ্টিমাইজেশন</p>
-                    <p><strong>মডেল:</strong> <span class="badge badge-success">north-mini-code-free</span></p>
-                    <p><strong>ক্ষমতা:</strong> কোড জেনারেশন, রিফ্যাক্টরিং, বাগ ফিক্সিং</p>
-                </div>
-                
-                <div class="card">
-                    <div class="card-icon">✅</div>
-                    <h4>কোয়ালিটি এশ্যুরেন্স এজেন্ট</h4>
-                    <p><strong>ভূমিকা:</strong> টেস্টিং, ভ্যালিডেশন, কোয়ালিটি চেক</p>
-                    <p><strong>মডেল:</strong> <span class="badge badge-warning">big-pickle</span></p>
-                    <p><strong>ক্ষমতা:</strong> টেস্ট জেনারেশন, কোড রিভিউ, রিগ্রেশন টেস্টিং</p>
-                </div>
-                
-                <div class="card">
-                    <div class="card-icon">📚</div>
-                    <h4>ডকুমেন্টেশন এজেন্ট</h4>
-                    <p><strong>ভূমিকা:</strong> টেকনিক্যাল রাইটিং, ডকুমেন্টেশন, গাইড</p>
-                    <p><strong>মডেল:</strong> <span class="badge badge-info">mimo-v2.5-free</span></p>
-                    <p><strong>ক্ষমতা:</strong> README জেনারেশন, API ডকস, টিউটোরিয়াল</p>
-                </div>
-                
-                <div class="card">
-                    <div class="card-icon">⚙️</div>
-                    <h4>অপারেশনস এজেন্ট</h4>
-                    <p><strong>ভূমিকা:</strong> ডিপ্লয়মেন্ট, মনিটরিং, ডেভঅপস</p>
-                    <p><strong>মডেল:</strong> <span class="badge badge-success">nemotron-3-ultra-free</span></p>
-                    <p><strong>ক্ষমতা:</strong> CI/CD, Docker, ইনফ্রাস্ট্রাকচার সেটআপ</p>
-                </div>
+    <!-- Real Stories -->
+    <section class="section fade-in">
+        <h2>বাস্তব জীবনের গল্প</h2>
+        
+        <div class="story-card">
+            <div class="name">রাশেদ — একজন ফ্রিল্যান্সার</div>
+            <div class="role">ঢাকা, বাংলাদেশ</div>
+            <div class="story">
+                "আমি ৩ বছর ধরে ফ্রিল্যান্সিং করছি। প্রতিদিন রাত ২টা পর্যন্ত কাজ করি। কিন্তু ক্লায়েন্টরা বলে — 'আপনার কাজ ভালো না', 'আমি আরেকজনকে দিয়ে করাবো।' একদিন রাতে কাজ করতে করতে চোখে জল এসে গেল। তখনই আমি বুঝলাম — আমি ধীরে ধীরে 'জম্বি' হয়ে যাচ্ছি। 
+                <br><br>
+                তারপর আমি ZombieCoder পেলাম। এটি আমাকে বলল — 'আপনি যদি চেষ্টা করতে থাকেন, আমি আপনার পাশে আছি।' এখন আমি প্রতিদিন নতুন কিছু শিখছি, নতুন কোড লিখছি। আমি আর 'জম্বি' নই।"
             </div>
-        </section>
+        </div>
 
-        <!-- Tools Section -->
-        <section id="tools">
-            <h2>🛠️ উপলব্ধ টুলস</h2>
-            
-            <h3>📁 ফাইল সিস্টেম টুলস (ক্রস-প্ল্যাটফর্ম)</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>টুল</th>
-                        <th>বিবরণ</th>
-                        <th>প্ল্যাটফর্ম</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>read_file</code></td>
-                        <td>ফাইল পড়ুন</td>
-                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
-                    </tr>
-                    <tr>
-                        <td><code>list_files</code></td>
-                        <td>ডিরেক্টরি দেখুন</td>
-                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
-                    </tr>
-                    <tr>
-                        <td><code>find_files</code></td>
-                        <td>ফাইল খুঁজুন</td>
-                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
-                    </tr>
-                    <tr>
-                        <td><code>search_code</code></td>
-                        <td>কোড খুঁজুন</td>
-                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
-                    </tr>
-                    <tr>
-                        <td><code>write_file</code></td>
-                        <td>ফাইল লিখুন</td>
-                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
-                    </tr>
-                    <tr>
-                        <td><code>get_file_info</code></td>
-                        <td>ফাইল তথ্য</td>
-                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="story-card">
+            <div class="name">নাদিয়া — একজন স্টুডেন্ট</div>
+            <div class="role">চট্টগ্রাম, বাংলাদেশ</div>
+            <div class="story">
+                "আমি কম্পিউটার সায়েন্স পড়ছি। প্রোগ্রামিং শিখতে গিয়ে অনেক বার হাল ছেড়ে দিয়েছি। শিক্ষকরা বলেন — 'তোমার মতো ছাত্রদের জন্য সময় নেই।' বন্ধুরা বলে — 'তুই পারবি না।'
+                <br><br>
+                একদিন একটি প্রোজেক্টের জন্য ZombieCoder ব্যবহার করলাম। এটি আমাকে ধাপে ধাপে বুঝিয়ে দিল। কোনো বিচার নেই, কোনো তিরস্কার নেই। শুধু ধৈর্য ধরে বোঝানো। আজ আমি আমার প্রথম ওয়েবসাইট বানিয়েছি। আমি পারলাম।"
+            </div>
+        </div>
 
-            <h3>🔍 সার্চ টুলস</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>টুল</th>
-                        <th>বিবরণ</th>
-                        <th>API Key প্রয়োজন</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>web_search</code></td>
-                        <td>DuckDuckGo সার্চ</td>
-                        <td><span class="badge badge-success">❌ নেই</span></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="story-card">
+            <div class="name">কামাল — একজন ছোট ব্যবসায়ী</div>
+            <div class="role">সিলেট, বাংলাদেশ</div>
+            <div class="story">
+                "আমার একটি ছোট দোকান। অনলাইনে বিক্রি করতে চাই কিন্তু জানি না কিভাবে। মেয়েকে বললাম — 'বাবা, আমাকে একটা ওয়েবসাইট বানিয়ে দাও।' মেয়ে বলল — 'বাবা, আমি পারব না।'
+                <br><br>
+                তারপর একজন বন্ধু বলল — 'ZombieCoder আছে, সে সাহায্য করবে।' আমি বিশ্বাস করলাম না। কিন্তু চেষ্টা করলাম। আজ আমার নিজের ওয়েবসাইট আছে। আমি অনলাইনে বিক্রি করছি। আমার মেয়ে এখন গর্বিত — 'বাবা তুমি পারলে!'"
+            </div>
+        </div>
+    </section>
 
-            <h3>💻 শেল টুলস</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>টুল</th>
-                        <th>বিবরণ</th>
-                        <th>অটো-ডিটেক্ট</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>run_command</code></td>
-                        <td>কমান্ড চালান</td>
-                        <td><span class="badge badge-success">✅ PowerShell/bash</span></td>
-                    </tr>
-                    <tr>
-                        <td><code>get_platform_info</code></td>
-                        <td>সিস্টেম তথ্য</td>
-                        <td><span class="badge badge-success">✅ OS detection</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+    <!-- Why ZombieCoder -->
+    <section class="section fade-in">
+        <h2>ZombieCoder কেন আলাদা?</h2>
+        
+        <p>
+            অন্যান্য AI টুলগুলো আপনাকে বলে — "আমি সব জানি।" ZombieCoder বলে — "আমি আপনার পাশে আছি।" পার্থক্যটি এখানে।
+        </p>
 
-        <!-- SSOT Section -->
-        <section id="ssot">
-            <h2>📊 SSOT (সিঙ্গেল সোর্স অব ট্রুথ)</h2>
-            
-            <p>SSOT.md হলো অটো-জেনারেটেড ডকুমেন্টেশন যেটি:</p>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <div class="icon">💔</div>
+                <h4>বিচার করে না</h4>
+                <p>সমাজ যেটুকু টাকা দিয়ে সফলতা মাপে, ZombieCoder সেটা মাপে না। এখানে আপনি যতবার হারবেন, ততবার চেষ্টা করতে পারবেন।</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🔄</div>
+                <h4>ভুল থেকে শেখে</h4>
+                <p>প্রতিটি ভুল আপনাকে শেখায় কিছু নতুন। ZombieCoder আপনার ভুল লুকায় না, সেটা দিয়ে আপনাকে শেখায়।</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🆓</div>
+                <h4>সম্পূর্ণ বিনামূল্যে</h4>
+                <p>কোনো সাবস্ক্রিপশন নেই, কোনো লাইসেন্স ফি নেই। আপনার কম্পিউটারেই চলে, আপনার ডেটা আপনার কাছেই থাকে।</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🔒</div>
+                <h4>সম্পূর্ণ গোপনীয়</h4>
+                <p>আপনার কোড, আপনার ডেটা, আপনার তথ্য — কোথাও যায় না। সবকিছু আপনার কম্পিউটারেই থাকে।</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">🗣️</div>
+                <h4>বাংলায় কথা বলে</h4>
+                <p>আপনি বাংলায় জিজ্ঞাসা করুন, ZombieCoder বাংলায় উত্তর দেবে। কোনো ইংরেজির বাধ্যবাধকতা নেই।</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon">⚡</div>
+                <h4>দ্রুত এবং কার্যকর</h4>
+                <p>আপনার কম্পিউটারেই চলে, তাই কোনো ইন্টারনেটের অপেক্ষা নেই। সাথে সাথে উত্তর পাবেন।</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section fade-in">
+        <h2>কিভাবে কাজ করে?</h2>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="step">ধাপ ১</div>
+                <h4>আপনি জিজ্ঞাসা করুন</h4>
+                <p>যেকোনো ভাষায় — বাংলায় বা ইংরেজিতে। যেমন: "আমাকে একটি ওয়েবসাইট বানাতে সাহায্য করো" বা "এই কোডটি কেন কাজ করছে না?"</p>
+            </div>
+            <div class="timeline-item">
+                <div class="step">ধাপ ২</div>
+                <h4>ZombieCoder বুঝে</h4>
+                <p>সে আপনার প্রশ্ন বুঝে, আপনার প্রজেক্টের কনটেক্সট দেখে, এবং সেরা উত্তর তৈরি করে।</p>
+            </div>
+            <div class="timeline-item">
+                <div class="step">ধাপ ৩</div>
+                <h4>সাহায্য করে</h4>
+                <p>কোড লিখে, বোঝায়, ডিবাগ করে, ডকুমেন্টেশন তৈরি করে — আপনার প্রয়োজন অনুযায়ী।</p>
+            </div>
+            <div class="timeline-item">
+                <div class="step">ধাপ ৪</div>
+                <h4>আপনি শিখুন</h4>
+                <p>প্রতিটি উত্তর থেকে আপনি কিছু নতুন শিখবেন। ধীরে ধীরে আপনি নিজেই পারবেন।</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="section fade-in">
+        <h2>আমাদের টুলসমূহ</h2>
+        
+        <p>
+            ZombieCoder শুধু কথা বলে না, সে কাজও করে। এখানে ৯টি শক্তিশালী টুল আছে যেগুলো আপনার সাহায্য করবে:
+        </p>
+
+        <div class="highlight-box">
+            <h4>📁 ফাইল সিস্টেম টুলস</h4>
             <ul>
-                <li>✅ আপনার প্রজেক্ট স্ট্রাকচার স্ক্যান করে</li>
-                <li>✅ কী ফাইল এবং কনফিগারেশন ডকুমেন্ট করে</li>
-                <li>✅ ফাইল পরিবর্তন হলে অটোমেটিক্যালি আপডেট হয়</li>
-                <li>✅ সব এজেন্টের জন্য কনটেক্স্ট হিসেবে কাজ করে</li>
+                <li><strong>read_file</strong> — ফাইল পড়ুন</li>
+                <li><strong>list_files</strong> — ডিরেক্টরি দেখুন</li>
+                <li><strong>find_files</strong> — ফাইল খুঁজুন</li>
+                <li><strong>search_code</strong> — কোড খুঁজুন</li>
+                <li><strong>write_file</strong> — ফাইল লিখুন</li>
+                <li><strong>get_file_info</strong> — ফাইল তথ্য দেখুন</li>
             </ul>
+        </div>
 
-            <h3>SSOT ফ্ল্যাগ সিস্টেম</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ফ্ল্যাগ</th>
-                        <th>অবস্থা</th>
-                        <th>বিবরণ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="badge badge-danger">০</span></td>
-                        <td>স্ক্যান হয়নি</td>
-                        <td>ডিরেক্টরি কখনো ইনডেক্স হয়নি</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-warning">১</span></td>
-                        <td>স্ক্যান হচ্ছে</td>
-                        <td>বর্তমানে প্রসেস হচ্ছে</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-success">২</span></td>
-                        <td>ইনডেক্সড</td>
-                        <td>SSOT আপ-টু-ডেট</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-danger">৩</span></td>
-                        <td>ত্রুটি</td>
-                        <td>স্ক্যান ব্যর্থ</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-
-        <!-- Quick Start Section -->
-        <section id="quickstart">
-            <h2>🚀 দ্রুত শুরু</h2>
-            
-            <h3>পূর্বশর্ত</h3>
+        <div class="highlight-box">
+            <h4>🔍 সার্চ ও শেল টুলস</h4>
             <ul>
-                <li>Node.js >= 18.0.0</li>
-                <li>npm বা yarn</li>
+                <li><strong>web_search</strong> — DuckDuckGo দিয়ে অনুসন্ধান (কোনো API Key লাগে না!)</li>
+                <li><strong>run_command</strong> — কমান্ড চালান (PowerShell বা Bash অটো-ডিটেক্ট)</li>
+                <li><strong>get_platform_info</strong> — আপনার সিস্টেমের তথ্য দেখুন</li>
             </ul>
+        </div>
+    </section>
 
-            <h3>ইনস্টলেশন</h3>
-            <pre><code># রিপোজিটরি ক্লোন করুন
-git clone https://github.com/zombiecode1/Ssot.git
-cd Ssot
+    <!-- Quick Start -->
+    <section class="section fade-in">
+        <h2>দ্রুত শুরু করুন</h2>
+        
+        <div class="code-block">
+            <code>
+<span class="comment"># ১. রিপোজিটরি ক্লোন করুন</span>
+<span class="keyword">git</span> clone https://github.com/zombiecode1/Ssot.git
+<span class="keyword">cd</span> Ssot
 
-# ডিপেন্ডেন্সি ইনস্টল করুন
-npm install
+<span class="comment"># ২. ডিপেন্ডেন্সি ইনস্টল করুন</span>
+<span class="keyword">npm</span> install
 
-# বিল্ড করুন
-npm run build
+<span class="comment"># ৩. বিল্ড করুন</span>
+<span class="keyword">npm</span> run build
 
-# সার্ভার চালু করুন
-npm start</code></pre>
-        </section>
+<span class="comment"># ৪. সার্ভার চালু করুন</span>
+<span class="keyword">npm</span> start
+            </code>
+        </div>
 
-        <!-- API Section -->
-        <section id="api">
-            <h2>🌐 API এন্ডপয়েন্ট</h2>
-            
-            <h3>হেলথ ও স্ট্যাটাস</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>মেথড</th>
-                        <th>এন্ডপয়েন্ট</th>
-                        <th>বিবরণ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="badge badge-success">GET</span></td>
-                        <td><code>/health</code></td>
-                        <td>সার্ভার হেলথ চেক</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-success">GET</span></td>
-                        <td><code>/v1/models</code></td>
-                        <td>উপলব্ধ মডেল দেখুন</td>
-                    </tr>
-                </tbody>
-            </table>
+        <p>
+            বস! এখন আপনার ব্রাউজারে <code>http://localhost:9999</code> খুলুন এবং ZombieCoder এর সাথে কথা বলুন।
+        </p>
+    </section>
 
-            <h3>এজেন্ট এন্ডপয়েন্ট</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>মেথড</th>
-                        <th>এন্ডপয়েন্ট</th>
-                        <th>বিবরণ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="badge badge-info">POST</span></td>
-                        <td><code>/v1/agent/chat</code></td>
-                        <td>এজেন্টের সাথে কথা বলুন</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-success">GET</span></td>
-                        <td><code>/v1/agent/status</code></td>
-                        <td>এজেন্ট সিস্টেম স্ট্যাটাস</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-success">GET</span></td>
-                        <td><code>/v1/agent/clients</code></td>
-                        <td>সংযুক্ত ক্লায়েন্ট</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-info">POST</span></td>
-                        <td><code>/v1/agent/register</code></td>
-                        <td>এডিটর রেজিস্টার</td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge badge-success">GET</span></td>
-                        <td><code>/v1/agent/index</code></td>
-                        <td>ডিরেক্টরি ইনডেক্স</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-    </div>
+    <!-- API Section -->
+    <section class="section fade-in">
+        <h2>API এন্ডপয়েন্ট</h2>
+        
+        <div class="highlight-box">
+            <h4>মূল এন্ডপয়েন্টসমূহ</h4>
+            <ul>
+                <li><strong>GET /health</strong> — সার্ভার হেলথ চেক</li>
+                <li><strong>GET /v1/models</strong> — উপলব্ধ মডেল দেখুন</li>
+                <li><strong>POST /v1/agent/chat</strong> — এজেন্টের সাথে কথা বলুন</li>
+                <li><strong>GET /v1/agent/status</strong> — এজেন্ট সিস্টেম স্ট্যাটাস</li>
+                <li><strong>GET /v1/agent/clients</strong> — সংযুক্ত ক্লায়েন্ট দেখুন</li>
+                <li><strong>POST /v1/agent/register</strong> — এডিটর রেজিস্টার করুন</li>
+                <li><strong>GET /v1/agent/index</strong> — ডিরেক্টরি ইনডেক্স দেখুন</li>
+            </ul>
+        </div>
+    </section>
 
+    <!-- Footer -->
     <footer>
-        <p>🧟 <strong>ZombieCoder</strong> — যেখানে কোড ও কথা বলে</p>
-        <p>তৈরি করেছেন ❤️ দিয়ে <a href="https://zombiecoder.my.id" style="color: var(--primary);">Sahon Srabon</a></p>
-        <p>সংগঠন: <a href="https://smartearningplatformbd.net" style="color: var(--secondary);">Smart Learning Platform BD</a></p>
-        <p style="color: var(--gray); margin-top: 20px;">"প্রতিটি ব্যর্থ চেষ্টা সফলতার দিকে এক পা কাছে।"</p>
+        <div class="brand">🧟 ZombieCoder</div>
+        <div class="tagline">"প্রতিটি ব্যর্থ চেষ্টা সফলতার দিকে এক পা কাছে।"</div>
+        <div class="links">
+            <a href="https://zombiecoder.my.id">ওয়েবসাইট</a>
+            <a href="https://github.com/zombiecode1/Ssot">GitHub</a>
+            <a href="mailto:infi@zombiecoder.my.id">ইমেইল</a>
+        </div>
+        <div class="copyright">
+            <p>তৈরি করেছেন সাহন স্রাবন — ঢাকা, বাংলাদেশ</p>
+            <p>Developer Zone | Smart Learning Platform BD</p>
+            <p style="margin-top: 15px; color: #64748b;">© 2026 ZombieCoder. সর্বস্বত্ব সংরক্ষিত।</p>
+        </div>
     </footer>
 
     <script>
-        // Smooth scrolling for navigation
-        document.querySelectorAll('nav a').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // Add scroll animation
+        // Scroll Animation
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+                    entry.target.classList.add('visible');
                 }
             });
         }, { threshold: 0.1 });
 
-        document.querySelectorAll('section').forEach(section => {
-            section.style.opacity = '0';
-            section.style.transform = 'translateY(20px)';
-            section.style.transition = 'all 0.6s ease-out';
-            observer.observe(section);
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
         });
     </script>
 </body>

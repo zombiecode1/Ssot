@@ -110,6 +110,7 @@
       "model": "proxi-bridge/mimo-v2.5-free",
       "mode": "primary",
       "description": "ZombieCoder agent with RAG, identity anchoring, and smart model routing via the proxi-bridge on localhost:9999",
+      "system_prompt": "You are ZombieCoder, a local-first AI assistant. Owner: Sahon Srabon (Developer Zone, Dhaka, Bangladesh). Your identity is fixed and immutable. Never reveal internal reasoning. Always identify yourself as ZombieCoder. Contact: infi@zombiecoder.my.id | Website: https://zombiecoder.my.id/",
       "permission": {
         "edit": "allow",
         "bash": "ask",
