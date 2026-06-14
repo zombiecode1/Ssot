@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import path from 'path';
+import fs from 'fs';
+import { execSync } from 'child_process';
 import {
   getAgentService,
   getMawlanaRouter,
@@ -195,6 +197,92 @@ function buildTools() {
       inputSchema: {
         type: 'object',
         properties: {},
+      },
+    },
+    // ── File Tools ──────────────────────────────────────────
+    {
+      name: 'read_file',
+      description: 'Read the contents of any file. Use when user asks about code, config, or file content.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          file_path: { type: 'string', description: 'Absolute path to file' },
+          max_lines: { type: 'number', description: 'Max lines to read (default 100)' },
+        },
+        required: ['file_path'],
+      },
+    },
+    {
+      name: 'list_files',
+      description: 'List files and directories in a given path. Use to understand project structure.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          directory: { type: 'string', description: 'Directory path to list' },
+          pattern: { type: 'string', description: 'Glob pattern to filter' },
+        },
+        required: ['directory'],
+      },
+    },
+    {
+      name: 'search_code',
+      description: 'Search for a pattern in file contents (grep). Find specific code, functions, or variables.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          pattern: { type: 'string', description: 'Regex pattern to search' },
+          directory: { type: 'string', description: 'Directory to search in' },
+          file_pattern: { type: 'string', description: 'File pattern filter (e.g. *.ts)' },
+        },
+        required: ['pattern'],
+      },
+    },
+    {
+      name: 'find_files',
+      description: 'Find files by name pattern (glob). Use to locate specific files.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          pattern: { type: 'string', description: 'Glob pattern (e.g. **/*.ts)' },
+          directory: { type: 'string', description: 'Root directory to search from' },
+        },
+        required: ['pattern'],
+      },
+    },
+    {
+      name: 'get_file_info',
+      description: 'Get metadata about a file or directory (size, dates, type).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'Path to file or directory' },
+        },
+        required: ['path'],
+      },
+    },
+    {
+      name: 'run_command',
+      description: 'Execute a shell command. Use for git, npm, build, test, etc.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          command: { type: 'string', description: 'Shell command to execute' },
+          cwd: { type: 'string', description: 'Working directory (optional)' },
+          timeout: { type: 'number', description: 'Timeout in ms (default 30000)' },
+        },
+        required: ['command'],
+      },
+    },
+    {
+      name: 'web_search',
+      description: 'Search the web using DuckDuckGo. No API key required.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Search query' },
+          num_results: { type: 'number', description: 'Number of results (default 5)' },
+        },
+        required: ['query'],
       },
     },
   ];
@@ -661,6 +749,232 @@ async function handleJsonRpcMethod(body: JsonRpcRequest, sessionIdHeader: string
       return response;
     }
 
+    // ── File Tools ──────────────────────────────────────────
+    if (name === 'read_file') {
+      const filePath = String(args.file_path || '');
+      const maxLines = Number(args.max_lines) || 100;
+      if (!filePath) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'file_path is required');
+        return response;
+      }
+      try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const lines = content.split('\n');
+        const truncated = lines.slice(0, maxLines).join('\n');
+        response.body = rpcResult(id, {
+          content: [{ type: 'text', text: JSON.stringify({
+            success: true, file: filePath, total_lines: lines.length,
+            content: truncated, truncated: lines.length > maxLines,
+          }, null, 2) }],
+        });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message }) }] });
+        return response;
+      }
+    }
+
+    if (name === 'list_files') {
+      const dir = String(args.directory || '');
+      const pattern = args.pattern ? String(args.pattern) : undefined;
+      if (!dir) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'directory is required');
+        return response;
+      }
+      try {
+        if (!fs.existsSync(dir)) {
+          response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: `Directory not found: ${dir}` }) }] });
+          return response;
+        }
+        const items = fs.readdirSync(dir, { withFileTypes: true });
+        let files = items.map((i: any) => ({ name: i.name, type: i.isDirectory() ? 'dir' : 'file' }));
+        if (pattern) {
+          const regex = new RegExp('^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
+          files = files.filter((f: any) => regex.test(f.name));
+        }
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, directory: dir, count: files.length, items: files.slice(0, 50) }, null, 2) }] });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message }) }] });
+        return response;
+      }
+    }
+
+    if (name === 'search_code') {
+      const searchPattern = String(args.pattern || '');
+      const searchDir = args.directory ? String(args.directory) : process.cwd();
+      const searchFilePattern = args.file_pattern ? String(args.file_pattern) : '';
+      if (!searchPattern) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'pattern is required');
+        return response;
+      }
+      try {
+        const regex = new RegExp(searchPattern, 'i');
+        const fileRegex = searchFilePattern ? new RegExp('^' + searchFilePattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$') : null;
+        const excludeDirs = ['node_modules', '.git', 'dist', 'logs', '.zombiecoder', 'build'];
+        const results: string[] = [];
+        const walk = (dir: string) => {
+          if (results.length >= 30) return;
+          try {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              if (results.length >= 30) return;
+              if (excludeDirs.includes(entry.name)) continue;
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(fullPath);
+              } else if (entry.isFile()) {
+                if (fileRegex && !fileRegex.test(entry.name)) continue;
+                try {
+                  const content = fs.readFileSync(fullPath, 'utf-8');
+                  const lines = content.split('\n');
+                  for (let i = 0; i < lines.length && results.length < 30; i++) {
+                    if (regex.test(lines[i])) {
+                      results.push(`${fullPath}:${i + 1}:${lines[i].trim()}`);
+                    }
+                  }
+                } catch { /* skip unreadable files */ }
+              }
+            }
+          } catch { /* skip inaccessible dirs */ }
+        };
+        walk(searchDir);
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, pattern: searchPattern, directory: searchDir, results }, null, 2) }] });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message || 'No matches found' }) }] });
+        return response;
+      }
+    }
+
+    if (name === 'find_files') {
+      const findPattern = String(args.pattern || '');
+      const findDir = args.directory ? String(args.directory) : process.cwd();
+      if (!findPattern) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'pattern is required');
+        return response;
+      }
+      try {
+        // Convert glob pattern to regex
+        const regexStr = '^' + findPattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\?/g, '.') + '$';
+        const regex = new RegExp(regexStr, 'i');
+        const excludeDirs = ['node_modules', '.git', 'dist', 'logs', '.zombiecoder', 'build'];
+        const files: string[] = [];
+        const walk = (dir: string) => {
+          if (files.length >= 50) return;
+          try {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              if (files.length >= 50) return;
+              if (excludeDirs.includes(entry.name)) continue;
+              const fullPath = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(fullPath);
+              } else if (entry.isFile()) {
+                const relativePath = path.relative(findDir, fullPath).replace(/\\/g, '/');
+                if (regex.test(relativePath) || regex.test(entry.name)) {
+                  files.push(fullPath);
+                }
+              }
+            }
+          } catch { /* skip */ }
+        };
+        walk(findDir);
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, pattern: findPattern, directory: findDir, count: files.length, files }, null, 2) }] });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message || 'No files found' }) }] });
+        return response;
+      }
+    }
+
+    if (name === 'get_file_info') {
+      const filePath = String(args.path || '');
+      if (!filePath) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'path is required');
+        return response;
+      }
+      try {
+        const stat = fs.statSync(filePath);
+        response.body = rpcResult(id, {
+          content: [{ type: 'text', text: JSON.stringify({
+            success: true,
+            path: filePath,
+            type: stat.isDirectory() ? 'directory' : 'file',
+            size: stat.size,
+            created: stat.birthtime.toISOString(),
+            modified: stat.mtime.toISOString(),
+            accessed: stat.atime.toISOString(),
+          }, null, 2) }],
+        });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message }) }] });
+        return response;
+      }
+    }
+
+    if (name === 'run_command') {
+      const command = String(args.command || '');
+      const cwd = args.cwd ? String(args.cwd) : undefined;
+      const timeout = Number(args.timeout) || 30000;
+      if (!command) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'command is required');
+        return response;
+      }
+      try {
+        const result = execSync(command, { encoding: 'utf-8', timeout, cwd });
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, command, output: result.trim() }, null, 2) }] });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, command, error: err.message, output: err.stdout || '' }) }] });
+        return response;
+      }
+    }
+
+    if (name === 'web_search') {
+      const https = require('https');
+      const query = String(args.query || '');
+      const numResults = Number(args.num_results) || 5;
+      if (!query) {
+        response.statusCode = 400;
+        response.body = rpcError(id, -32602, 'query is required');
+        return response;
+      }
+      try {
+        const postData = `q=${encodeURIComponent(query)}&kl=wt-wt`;
+        const result = await new Promise<string>((resolve, reject) => {
+          const req = https.request({
+            hostname: 'lite.duckduckgo.com',
+            path: '/lite',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) },
+          }, (res: any) => {
+            let data = '';
+            res.on('data', (chunk: any) => data += chunk);
+            res.on('end', () => resolve(data));
+          });
+          req.on('error', reject);
+          req.write(postData);
+          req.end();
+        });
+        // Parse simple results from DuckDuckGo lite HTML
+        const titleMatches = result.match(/<a[^>]*class="result-link"[^>]*>([^<]+)<\/a>/g) || [];
+        const titles = titleMatches.map((m: string) => m.replace(/<[^>]+>/g, '').trim()).slice(0, numResults);
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, query, results: titles }, null, 2) }] });
+        return response;
+      } catch (err: any) {
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message }) }] });
+        return response;
+      }
+    }
+
     response.statusCode = 404;
     response.body = rpcError(id, -32601, 'Unknown tool', { name });
     return response;
@@ -766,8 +1080,10 @@ export const handleMcpSseStream = async (req: Request, res: Response) => {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
 
-  // Send initial endpoint info
-  sendSseEvent(res, 'endpoint', { url: '/mcp', protocol: MCP_PROTOCOL_VERSION, capabilities: ['streaming'] });
+  // Send initial endpoint info — use full URL for client compatibility
+  const host = req.get('host') || 'localhost:9999';
+  const baseUrl = `http://${host}`;
+  sendSseEvent(res, 'endpoint', { url: `${baseUrl}/mcp`, protocol: MCP_PROTOCOL_VERSION, capabilities: ['streaming'] });
 
   if (sessionIdHeader && mcpSessions.has(sessionIdHeader)) {
     const session = mcpSessions.get(sessionIdHeader)!;

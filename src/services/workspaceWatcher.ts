@@ -41,7 +41,7 @@ export function startWorkspaceWatcher(opts: {
   debounceMs?: number;
 }): WorkspaceWatcher {
   const directory = path.resolve(opts.directory);
-  const debounceMs = opts.debounceMs ?? 1500;
+  const debounceMs = opts.debounceMs ?? 5000;
 
   let timer: NodeJS.Timeout | null = null;
   const triggerRescan = () => {
@@ -92,7 +92,7 @@ export function startWorkspaceWatcher(opts: {
     ignoreInitial: true,
     ignored: defaultIgnored,
     depth: 5,
-    awaitWriteFinish: { stabilityThreshold: 400, pollInterval: 100 },
+    awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 500 },
   });
 
   recordRuntimeEvent({
