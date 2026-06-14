@@ -359,8 +359,8 @@ async function fetchModelsFromProvider(def: ProviderDef): Promise<Array<{
     return {
       id,
       category,
-      context_window: m.context_window || inferContextWindow(category, id),
-      max_output_tokens: m.max_tokens || inferMaxTokens(category, id),
+      context_window: m.context_window ?? inferContextWindow(category, id),
+      max_output_tokens: m.max_tokens ?? inferMaxTokens(category, id),
       is_free: def.id === 'opencode' || def.id === 'groq',
       supports_tools: !id.includes('embed') && !id.includes('whisper') && !id.includes('guard'),
       supports_vision: id.includes('vision') || id.includes('gpt-4o'),
@@ -376,6 +376,8 @@ function inferCategory(modelId: string): string {
   if (lower.includes('whisper') || lower.includes('tts') || lower.includes('audio')) return 'audio';
   if (lower.includes('embed')) return 'embedding';
   if (lower.includes('vision')) return 'vision';
+  // OpenCode models: deepseek, mimo, big-pickle, nemotron, kimi, qwen, minimax, claude, gpt, gemini
+  if (lower.startsWith('deepseek-') || lower.startsWith('mimo-') || lower.startsWith('big-pickle') || lower.startsWith('nemotron-') || lower.startsWith('kimi-') || lower.startsWith('qwen3') || lower.startsWith('minimax-') || lower.startsWith('claude-') || lower.startsWith('gpt-') || lower.startsWith('gemini-')) return 'balanced';
   if (lower.includes('mini') || lower.includes('flash') || lower.includes('haiku') || lower.includes('8b') || lower.includes('1b') || lower.includes('instant')) return 'fast';
   if (lower.includes('70b') || lower.includes('120b') || lower.includes('opus') || lower.includes('pro') || lower.includes('max')) return 'powerful';
   return 'balanced';
@@ -392,6 +394,9 @@ function inferContextWindow(category: string, modelId: string): number {
 function inferMaxTokens(category: string, modelId: string): number {
   if (category === 'audio' || category === 'embedding') return 0;
   if (category === 'guard') return 512;
+  // OpenCode models: deepseek, mimo, big-pickle, nemotron, kimi, qwen, minimax, claude, gpt, gemini
+  const lower = modelId.toLowerCase();
+  if (lower.startsWith('deepseek-') || lower.startsWith('mimo-') || lower.startsWith('big-pickle') || lower.startsWith('nemotron-') || lower.startsWith('kimi-') || lower.startsWith('qwen3') || lower.startsWith('minimax-') || lower.startsWith('claude-') || lower.startsWith('gpt-') || lower.startsWith('gemini-')) return 65536;
   if (category === 'fast') return 8192;
   return 32768;
 }

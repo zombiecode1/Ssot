@@ -584,11 +584,9 @@ export const handleListModels = async (req: Request, res: Response) => {
         object: 'model',
         created: m.created,
         owned_by: m.owned_by,
-        ...(process.env.NODE_ENV === 'development' ? {
-          context_window: m.context_window,
-          max_tokens: m.max_tokens,
-          category: m.category,
-        } : {}),
+        context_window: m.context_window || 0,
+        max_tokens: m.max_tokens || 0,
+        category: m.category || 'balanced',
       })),
     });
   } catch (error: any) {
@@ -615,6 +613,9 @@ export const handleGetModel = async (req: Request, res: Response) => {
       object: 'model',
       created: model.created,
       owned_by: model.owned_by,
+      context_window: model.context_window || 0,
+      max_tokens: model.max_tokens || 0,
+      category: model.category || 'balanced',
     });
   } catch (error: any) {
     res.status(500).json({

@@ -153,12 +153,11 @@ function inferCategory(modelId: string): ModelMeta['category'] {
   if (lower.includes('whisper') || lower.includes('tts') || lower.includes('audio')) return 'audio';
   if (lower.includes('embed')) return 'embedding';
   if (lower.includes('vision')) return 'vision';
+  // OpenCode models: deepseek, mimo, big-pickle, nemotron, kimi, qwen, minimax, claude, gpt, gemini
+  if (lower.startsWith('deepseek-') || lower.startsWith('mimo-') || lower.startsWith('big-pickle') || lower.startsWith('nemotron-') || lower.startsWith('kimi-') || lower.startsWith('qwen3') || lower.startsWith('minimax-') || lower.startsWith('claude-') || lower.startsWith('gpt-') || lower.startsWith('gemini-')) return 'balanced';
   if (
     lower.includes('sonnet') ||
     lower.includes('opus') ||
-    lower.includes('gpt-5') ||
-    lower.includes('gpt-4.1') ||
-    lower.includes('qwen3-32b') ||
     lower.includes('70b') ||
     lower.includes('120b')
   ) return 'balanced';
@@ -185,8 +184,10 @@ function inferContextWindow(category: ModelMeta['category'], modelId: string): n
 function inferMaxTokens(category: ModelMeta['category'], modelId: string): number {
   if (category === 'audio' || category === 'embedding') return 0;
   if (category === 'guard') return 512;
-  if (modelId.toLowerCase().includes('gemini-2.5-pro')) return 65536;
-  if (modelId.toLowerCase().includes('gpt-5')) return 65536;
+  // OpenCode models: deepseek, mimo, big-pickle, nemotron, kimi, qwen, minimax, claude, gpt, gemini
+  const lower = modelId.toLowerCase();
+  if (lower.startsWith('deepseek-') || lower.startsWith('mimo-') || lower.startsWith('big-pickle') || lower.startsWith('nemotron-') || lower.startsWith('kimi-') || lower.startsWith('qwen3') || lower.startsWith('minimax-') || lower.startsWith('claude-') || lower.startsWith('gpt-') || lower.startsWith('gemini-')) return 65536;
+  if (lower.includes('gemini-2.5-pro')) return 65536;
   if (category === 'fast') return 8192;
   return 32768;
 }
