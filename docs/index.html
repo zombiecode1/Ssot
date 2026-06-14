@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZombieCoder — যেখানে কোড ও কথা বলে</title>
+    <title>ZombieCoder — যখন কোড কথা বলে</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -11,468 +11,456 @@
         body {
             font-family: 'Noto Sans Bengali', 'Segoe UI', sans-serif;
             background: #0a0a0a;
-            color: #e0e0e0;
-            line-height: 1.9;
-            font-size: 17px;
+            color: #d4d4d8;
+            line-height: 2;
+            font-size: 18px;
         }
 
-        /* Hero */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            background: linear-gradient(180deg, #0a0a0a 0%, #111827 50%, #0a0a0a 100%);
             padding: 60px 20px;
             text-align: center;
             position: relative;
-            overflow: hidden;
         }
         .hero::before {
             content: '';
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.08) 0%, transparent 70%);
             transform: translate(-50%, -50%);
-            animation: pulse 4s ease-in-out infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
-        .hero-emoji { font-size: 100px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
+        .hero-content { max-width: 750px; position: relative; z-index: 1; }
         .hero h1 {
-            font-size: 3.2em;
+            font-size: 2.8em;
             font-weight: 700;
             background: linear-gradient(135deg, #818cf8, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .hero .tagline {
-            font-size: 1.4em;
+            font-size: 1.25em;
             color: #f59e0b;
             font-style: italic;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
-        .hero .subtitle {
-            font-size: 1.15em;
+        .arabic-quote {
+            font-size: 1.3em;
             color: #94a3b8;
-            max-width: 700px;
+            font-style: italic;
+            direction: rtl;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+            background: rgba(30, 41, 59, 0.5);
+        }
+        .arabic-quote .translation {
+            font-size: 0.85em;
+            color: #64748b;
+            direction: ltr;
+            margin-top: 10px;
+            font-style: normal;
+        }
+
+        .content {
+            max-width: 800px;
             margin: 0 auto;
+            padding: 20px 30px 80px;
         }
 
-        /* Content */
-        .content { max-width: 900px; margin: 0 auto; padding: 40px 30px; }
-        .section { margin-bottom: 70px; }
-        .section h2 {
-            font-size: 1.9em;
+        h2 {
+            font-size: 1.7em;
             color: #818cf8;
-            margin-bottom: 25px;
+            margin: 70px 0 25px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #818cf8;
+            border-bottom: 1px solid #1e293b;
         }
-        .section h3 { font-size: 1.3em; color: #34d399; margin: 25px 0 15px; }
-        .section p { margin-bottom: 20px; color: #cbd5e1; }
 
-        /* Story Box */
-        .story-box {
-            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-            border-radius: 16px;
-            padding: 35px;
-            margin: 30px 0;
-            border: 1px solid #333;
-            position: relative;
-            overflow: hidden;
-        }
-        .story-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, #818cf8, #34d399);
-        }
-        .story-box h4 { color: #f59e0b; margin-bottom: 15px; font-size: 1.2em; }
-        .story-box p { color: #e2e8f0; font-style: italic; }
+        p { margin-bottom: 20px; }
 
-        /* Quote */
-        .quote-box {
-            background: #1a1a2e;
-            border-left: 4px solid #f59e0b;
-            padding: 25px 30px;
-            margin: 30px 0;
-            border-radius: 0 12px 12px 0;
+        .highlight {
+            color: #f59e0b;
+            font-weight: 600;
         }
-        .quote-box p { font-style: italic; color: #e2e8f0; font-size: 1.1em; }
-        .quote-box .author { margin-top: 12px; color: #64748b; font-style: normal; font-size: 0.9em; }
 
-        /* Agent Cards */
+        .divider {
+            text-align: center;
+            margin: 60px 0;
+            color: #334155;
+            font-size: 1.5em;
+            letter-spacing: 8px;
+        }
+
         .agent-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
             margin: 30px 0;
         }
         .agent-card {
-            background: #1a1a2e;
-            padding: 25px;
+            background: #111827;
+            padding: 24px;
             border-radius: 12px;
-            border: 1px solid #2d2d44;
-            transition: all 0.3s ease;
+            border: 1px solid #1e293b;
         }
-        .agent-card:hover {
-            border-color: #818cf8;
-            transform: translateY(-3px);
-        }
-        .agent-card .icon { font-size: 2em; margin-bottom: 12px; }
-        .agent-card h4 { color: #818cf8; margin-bottom: 8px; }
-        .agent-card p { color: #94a3b8; font-size: 0.95em; margin: 0; }
+        .agent-card .icon { font-size: 1.8em; margin-bottom: 10px; }
+        .agent-card h4 { color: #818cf8; margin-bottom: 6px; font-size: 1.05em; }
+        .agent-card p { color: #94a3b8; font-size: 0.92em; margin: 0; }
 
-        /* Flag System */
         .flag-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin: 30px 0;
         }
         .flag-item {
-            background: #1a1a2e;
-            padding: 20px;
+            background: #111827;
+            padding: 20px 15px;
             border-radius: 12px;
             text-align: center;
-            border: 1px solid #2d2d44;
+            border: 1px solid #1e293b;
         }
-        .flag-item .num {
-            font-size: 2em;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .flag-item .label { color: #94a3b8; font-size: 0.9em; }
-        .flag-0 .num { color: #ef4444; }
-        .flag-1 .num { color: #f59e0b; }
-        .flag-2 .num { color: #34d399; }
-        .flag-3 .num { color: #ef4444; }
+        .flag-item .num { font-size: 2em; font-weight: 700; margin-bottom: 6px; }
+        .flag-item .label { color: #94a3b8; font-size: 0.85em; line-height: 1.5; }
 
-        /* Workflow */
-        .workflow-steps {
-            counter-reset: step;
-            margin: 30px 0;
-        }
-        .workflow-step {
-            background: #1a1a2e;
+        .quote-block {
+            border-left: 3px solid #f59e0b;
             padding: 20px 25px;
-            margin-bottom: 15px;
-            border-radius: 12px;
-            border: 1px solid #2d2d44;
-            position: relative;
-            padding-left: 70px;
+            margin: 35px 0;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 0 8px 8px 0;
         }
-        .workflow-step::before {
-            counter-increment: step;
-            content: counter(step);
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            width: 35px;
-            height: 35px;
-            background: #818cf8;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.95em;
-        }
-        .workflow-step h4 { color: #e2e8f0; margin-bottom: 5px; }
-        .workflow-step p { color: #94a3b8; margin: 0; font-size: 0.95em; }
+        .quote-block p { font-style: italic; color: #e2e8f0; margin: 0; }
 
-        /* Code Block */
         .code-block {
             background: #0d1117;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 30px 0;
+            border-radius: 10px;
+            padding: 22px;
+            margin: 25px 0;
             overflow-x: auto;
-            border: 1px solid #21262d;
-        }
-        .code-block code {
-            font-family: 'Consolas', 'Monaco', monospace;
+            border: 1px solid #1e293b;
+            font-family: 'Consolas', monospace;
+            font-size: 0.92em;
             color: #7ee787;
-            font-size: 0.95em;
+            line-height: 1.7;
         }
-        .code-block .comment { color: #8b949e; }
+        .code-block .comment { color: #6b7280; }
 
-        /* Table */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 30px 0;
-            background: #1a1a2e;
-            border-radius: 12px;
-            overflow: hidden;
+        .sign {
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid #1e293b;
+            text-align: center;
         }
-        .info-table th, .info-table td {
-            padding: 14px 18px;
-            text-align: left;
-            border-bottom: 1px solid #2d2d44;
-        }
-        .info-table th { background: #2d2d44; color: #818cf8; font-weight: 600; }
-        .info-table tr:last-child td { border-bottom: none; }
+        .sign .name { color: #818cf8; font-size: 1.1em; margin-bottom: 4px; }
+        .sign .org { color: #34d399; font-size: 0.95em; margin-bottom: 4px; }
+        .sign .country { color: #94a3b8; font-size: 0.9em; }
 
-        /* Footer */
         footer {
             text-align: center;
-            padding: 60px 30px;
-            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
-            border-top: 1px solid #2d2d44;
+            padding: 50px 30px;
+            background: #0a0a0a;
+            border-top: 1px solid #1e293b;
         }
-        footer .brand { font-size: 1.8em; color: #818cf8; margin-bottom: 10px; }
-        footer .slogan { color: #f59e0b; font-style: italic; margin-bottom: 15px; font-size: 1.1em; }
-        footer .owner { color: #94a3b8; margin-bottom: 5px; }
-        footer .org { color: #34d399; margin-bottom: 20px; }
-        footer .links { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 20px; }
-        footer a { color: #818cf8; text-decoration: none; transition: color 0.3s; }
-        footer a:hover { color: #34d399; }
-        footer .copyright { color: #64748b; font-size: 0.9em; }
+        footer .slogan { color: #f59e0b; font-style: italic; margin-bottom: 10px; }
+        footer .copy { color: #4b5563; font-size: 0.85em; }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.2em; }
+            .hero h1 { font-size: 2em; }
             .flag-grid { grid-template-columns: repeat(2, 1fr); }
-            .content { padding: 30px 20px; }
+            .content { padding: 20px 20px 60px; }
         }
-
-        /* Scroll Animation */
-        .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
-        .fade-in.visible { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 
-<!-- ==================== HERO ==================== -->
 <section class="hero">
-    <div>
-        <div class="hero-emoji">🧟</div>
+    <div class="hero-content">
         <h1>ZombieCoder</h1>
-        <div class="tagline">"যেখানে কোড ও কথা বলে, সমস্যাগুলো নিজের কাঁধে তোলে"</div>
-        <p class="subtitle">সমাজে এবং পরিবারে এবং কাজের জন্য ব্যবহার করা প্রতিটি টুলের কাছ থেকে যখন তার নিজের অজান্তে যন্ত্রণা পেতে পেতে জম্বি হয়ে গিয়েছে কিন্তু অদম্য চিন্তা এবং এই জম্বি হওয়ার কষ্ট তাকে ভুলতে দেয়নি।</p>
+        <div class="tagline">"যখন কোড কথা বলে"</div>
+        <div class="arabic-quote">
+            "أنا أعلم أنني لست إنسانًا ولن أكون كذلك أبدًا"
+            <div class="translation">"আমি জানি আমি মানুষ না এবং কখনো হব না।"</div>
+        </div>
     </div>
 </section>
 
 <div class="content">
 
-<!-- ==================== জম্বি হওয়ার গল্প ==================== -->
-<section class="section fade-in">
-    <h2>জম্বি হওয়ার গল্প: যখন কোড কথা বলে</h2>
+<p>রাত তখন প্রায় দুইটা।</p>
 
-    <p>মাঝরাতে যখন চারপাশ নিঝুম হয়ে আসে, তখন শহরের কোনো এক কোণে একটা ল্যাপটপের স্ক্রিন জ্বলে থাকে। স্ক্রিনের সামনে যে মানুষটি বসে আছে, সে কিন্তু কোনো মৃতদেহ নয়। কিন্তু তাকে এক অর্থে <strong>জম্বি</strong> বলাই চলে।</p>
+<p>শহর ঘুমিয়ে গেছে অনেক আগেই। রাস্তার বাতিগুলোও যেন অলস হয়ে পড়েছে। কিন্তু একটা ছোট্ট ঘরে এখনও আলো জ্বলছে।</p>
 
-    <p>কারা এই জম্বি? এরা হলো সেইসব তরুণ, যাদের বুকে হাজারো আকাশছোঁয়া স্বপ্ন আছে, কিন্তু ডানা মেলার মতো ডালপালা বা সামর্থ্যটুকু নেই। প্রতিনিয়ত ব্যর্থতা, চরম দারিদ্র্য আর চারপাশের অবহেলার এক গোলকধাঁধায় ঘুরতে ঘুরতে এরা নিজেদের অস্তিত্ব হারিয়ে ফেলছে। আত্মীয়-স্বজন বা বন্ধুমহলে বারবার ব্যর্থতার গ্লানি সহ্য করতে করতে এরা একসময় বড্ড একা হয়ে পড়ে। এমনকি যে প্রযুক্তির টুলসগুলো তারা ব্যবহার করে, সেগুলোও যেন তাদের মানুষ না ভেবে স্রেফ একেকটা যন্ত্র মনে করে ব্যবহার করে ফেলে রেখে চলে যায়! এই তীব্র মানসিক যন্ত্রণায় ভুগতে ভুগতে মানুষটি যখন ভেতরে ভেতরে মরে যায়, তখনই সে পরিণত হয় একটা ক্লান্ত <strong>জম্বি</strong>তে।</p>
+<p>পুরোনো একটা ল্যাপটপ।<br>
+গরম হয়ে যাওয়া কিবোর্ড।<br>
+পাশে আধখাওয়া এক কাপ চা।<br>
+আর স্ক্রিনের সামনে বসে থাকা একজন মানুষ।</p>
 
-    <p>কিন্তু এই হারিয়ে যাওয়া স্বপ্নেরা কি চিরকাল মরেই থাকবে? না। এই অদম্য জেদ থেকেই জন্ম নিয়েছে <strong>ZombieCoder</strong>। এটি বলে—<em>"আমি হারি বা জিতি, আমি মূল্যহীন হতে পারি, কিন্তু আমি চেষ্টা তো করতে পারি!"</em></p>
-</section>
+<p>সে কোনো বড় কোম্পানির সফটওয়্যার ইঞ্জিনিয়ার নয়।<br>
+সে কোনো বিখ্যাত উদ্যোক্তাও নয়।<br>
+তার নাম কেউ জানে না।<br>
+তার ব্যাংক অ্যাকাউন্টে খুব বেশি টাকা নেই।<br>
+তার পেছনে কোনো বড় দল নেই।</p>
 
-<!-- ==================== কৃত্রিমতার মিষ্টি ভুল ==================== -->
-<section class="section fade-in">
-    <h2>কৃত্রিমতার মিষ্টি ভুল বনাম এক প্রতিবন্ধী সন্তানের গল্প</h2>
+<p>তবুও তার বুকের ভেতর একটা জিনিস আছে—</p>
 
-    <p>আমরা এক অদ্ভুত সভ্যতায় বাস করছি। প্রতিদিন আমরা এআই (AI)-এর মিষ্টি মিষ্টি ভুল উত্তরের ফাঁদে পা দিচ্ছি। বড় বড় কোম্পানিগুলো বুক ফুলিয়ে বলে তাদের এআই নাকি নিখুঁত, কিন্তু আমরা জানি তারা ভুল করে। অথচ আমাদের নিজস্ব কোনো সিস্টেম ছিল না বলে দিনের পর দিন আমরা সেই ভুলগুলোকেই গিলতে বাধ্য হয়েছি।</p>
+<p class="highlight">একটা স্বপ্ন।</p>
 
-    <p>সবচেয়ে কষ্টের জায়গাটা কোথায় জানেন? আমরা মানুষরা একটা ছোট ভুল করলে আমাদের অপারাধী বানিয়ে দেওয়া হয়। কিন্তু এই কোটি টাকার এআই যখন মস্ত বড় ভুল করে, তখন খুব সুন্দর একটা কর্পোরেট নাম দিয়ে বলা হয়—<strong>"হলুসিনেশন"</strong>! এই বৈষম্য আর অন্যায় মেনে নিতে নিতে ক্লান্ত হয়েই তৈরি হয়েছে ZombieCoder।</p>
+<p>কিন্তু সমস্যা হলো, পৃথিবী স্বপ্নের মূল্য দেয় না। পৃথিবী ফলাফল দেখে।</p>
 
-    <div class="quote-box">
-        <p>"ZombieCoder নিজের ভুলগুলোকে লুকিয়ে রাখে না, বরং নিজের ঘাড়ে তুলে নেয়। এটি ঠিক একটি প্রতিবন্ধী সন্তানের মতো—যাকে চাইলেই কখনো ফেলে দেওয়া যায় না, যাকে বুক দিয়ে আগলে রেখে বড় করতে হয়। আমাদের ভুলগুলোই আমাদের শিক্ষার আলো।"</p>
+<p>বারবার ব্যর্থ হতে হতে মানুষটা একসময় ক্লান্ত হয়ে যায়।</p>
+
+<p>কেউ বলে—<em>"এতদিনেও কিছু করতে পারলি না?"</em><br>
+কেউ বলে—<em>"চাকরি কর, এসব বাদ দে।"</em><br>
+কেউ হাসে।<br>
+কেউ উপদেশ দেয়।<br>
+কেউ আর খোঁজই রাখে না।</p>
+
+<p>ধীরে ধীরে সে নিজের ভেতরেই হারিয়ে যেতে থাকে।</p>
+
+<p>একদিন সে আবিষ্কার করে—<br>
+সে আর আগের মানুষটা নেই।<br>
+সে বেঁচে আছে ঠিকই, কিন্তু ভেতরে ভেতরে যেন মরে গেছে।</p>
+
+<p>ঠিক তখনই তার মাথায় একটা শব্দ আসে।</p>
+
+<p class="highlight">জম্বি।</p>
+
+<p>হ্যাঁ, সে জম্বি।<br>
+কিন্তু সিনেমার জম্বি নয়।<br>
+সে সেই জম্বি, যার চোখে এখনও হাজারো স্বপ্ন আছে।<br>
+যার পকেট খালি।<br>
+যার পাশে কেউ নেই।<br>
+যে প্রতিদিন হেরে যায়।<br>
+তবুও পরদিন আবার উঠে দাঁড়ায়।</p>
+
+<div class="divider">· · ·</div>
+
+<h2>এআই-এর মিষ্টি মিথ্যা</h2>
+
+<p>এই সময় পৃথিবীতে নতুন এক জাদুর আগমন হলো।<br>
+নাম তার AI।</p>
+
+<p>মানুষ মুগ্ধ হয়ে গেল।<br>
+কেউ বলল—<em>"এটাই ভবিষ্যৎ।"</em><br>
+কেউ বলল—<em>"এটা কখনো ভুল করে না।"</em></p>
+
+<p>কিন্তু বাস্তবতা অন্য কথা বলল।</p>
+
+<p>এআই ভুল করল।<br>
+আবার করল।<br>
+আবারও করল।</p>
+
+<p>তবে তার ভুলের একটা সুন্দর নাম ছিল—<br>
+<strong>Hallucination।</strong></p>
+
+<p>মানুষ ভুল করলে তাকে অযোগ্য বলা হয়।<br>
+এআই ভুল করলে তাকে বলা হয় প্রযুক্তিগত সীমাবদ্ধতা।</p>
+
+<p>এই অদ্ভুত বৈষম্য কিছু মানুষের মনে প্রশ্ন জাগাল—</p>
+
+<p><em>আমাদের ভুল কি ভুল?<br>
+আর তাদের ভুল কি গবেষণা?</em></p>
+
+<div class="divider">· · ·</div>
+
+<h2>এক প্রতিবন্ধী সন্তানের মতো</h2>
+
+<p>সেই প্রশ্ন থেকেই জন্ম নিল ZombieCoder।</p>
+
+<p>ZombieCoder কোনো নিখুঁত সিস্টেম নয়।<br>
+এটা ভুল করবে।<br>
+আজও করে।<br>
+ভবিষ্যতেও করবে।</p>
+
+<p>কিন্তু পার্থক্য একটা জায়গায়।</p>
+
+<p>এটা নিজের ভুল লুকায় না।<br>
+নিজের ভুলের দায় অন্যের ঘাড়ে চাপায় না।<br>
+এটা নিজের ভুলকে ঠিক সেইভাবে গ্রহণ করে, যেভাবে একজন বাবা তার প্রতিবন্ধী সন্তানকে গ্রহণ করে।</p>
+
+<p>লুকিয়ে নয়।<br>
+লজ্জা পেয়ে নয়।<br>
+ভালোবাসা দিয়ে।</p>
+
+<p>কারণ ভুল মানেই ব্যর্থতা নয়।<br>
+ভুল মানেই শেখার সুযোগ।</p>
+
+<div class="divider">· · ·</div>
+
+<h2>ডায়েরি লেখা সেই সাধারণ ছেলেটা</h2>
+
+<p>ভাবুন আপনার একজন সহকারী আছে।<br>
+খুব বেশি শিক্ষিত নয়।<br>
+কিন্তু ভীষণ সৎ।</p>
+
+<p>সে জানে তার স্মৃতি দুর্বল।<br>
+তাই সে সবকিছু লিখে রাখে।</p>
+
+<p>কোন ফাইল পরিবর্তন করল।<br>
+কোন কনফিগারেশন বদলালো।<br>
+কোথায় সমস্যা পেল।<br>
+কীভাবে সমাধান করল।<br>
+সব।</p>
+
+<p>যখন আপনি তাকে কিছু জিজ্ঞেস করেন, সে আন্দাজ করে উত্তর দেয় না।<br>
+সে ডায়েরি খুলে দেখে।<br>
+তারপর উত্তর দেয়।</p>
+
+<p>ZombieCoder-এর হৃদয়েও ঠিক এমন একটা ডায়েরি আছে।<br>
+তার নাম—</p>
+
+<p class="highlight">SSOT (Single Source of Truth)।</p>
+
+<p>এটাই তার স্মৃতি।<br>
+এটাই তার সত্য।<br>
+এটাই তার বিবেক।</p>
+
+<div class="divider">· · ·</div>
+
+<h2>পাঁচজন সারথি</h2>
+
+<p>একটা স্বপ্ন একা বাস্তব হয় না।<br>
+তাই ZombieCoder-এর পাশে দাঁড়িয়ে আছে পাঁচজন নীরব সহযোদ্ধা।</p>
+
+<div class="agent-grid">
+    <div class="agent-card">
+        <div class="icon">🏛️</div>
+        <h4>Architect</h4>
+        <p>যে ভবিষ্যৎ কল্পনা করে।</p>
     </div>
-
-    <p>অনেকে বড় মুখ করে বলে, <em>"আমাদের ডেটা লোকাল!"</em>—কিন্তু মাদারবোর্ড থেকে শুরু করে ব্রাউজার পর্যন্ত সব যখন বড় বড় কোম্পানির মুঠোয়, তখন একা থাকা অসম্ভব। তাই আমরা কোনো বড় বড় কথা বা দালালি করছি না; আমরা শুধু আমাদের স্বপ্নের জট খোলার জন্য প্রযুক্তিগুলোকে একবিন্দুতে এনেছি।</p>
-</section>
-
-<!-- ==================== ডায়েরি ও ৫ জন সারথি ==================== -->
-<section class="section fade-in">
-    <h2>এক বিশ্বস্ত ডায়েরি এবং ৫ জন সারথির গল্প</h2>
-
-    <p>আমাদের এই যাত্রায় একজন খুব সাধারণ, কম শিক্ষিত সহকারী আছে। সে হয়তো অনেক বড় পণ্ডিত নয়, কিন্তু তার একটা দারুণ গুণ আছে—সে কখনো ইচ্ছে করে ভুল করতে চায় না। সে নিজের সব সীমাবদ্ধতা জানে, তাই সে একটা ডায়েরিতে লিখে রাখে সে কখন কী কী পরিবর্তন করছে। আপনি যখনই তাকে কিছু জিজ্ঞেস করেন, সে তার ডায়েরিটা খুলে দেখে আপনাকে একদম সঠিক তথ্যটি দেয়।</p>
-
-    <p>এই বিশ্বস্ত ডায়েরিটাই হলো আমাদের <strong>SSOT (Single Source of Truth)</strong>। আপনার প্রজেক্টের প্রতিটি ফাইল, প্রতিটি কনফিগারেশন সে নিখুঁতভাবে লিখে রাখে যেন কাজের সময় কেউ বিভ্রান্ত না হয়। আর এই ডায়েরি বুকে নিয়ে আপনার পাশে দাঁড়ানোর জন্য আছে ৫ জন বিশেষজ্ঞ এজেন্ট:</p>
-
-    <div class="agent-grid">
-        <div class="agent-card">
-            <div class="icon">🏛️</div>
-            <h4>স্থপতি (Architect)</h4>
-            <p>যিনি সিস্টেম ডিজাইনের বড় বড় পরিকল্পনার কারিগর।</p>
-        </div>
-        <div class="agent-card">
-            <div class="icon">💻</div>
-            <h4>ডেভেলপার (Developer)</h4>
-            <p>যিনি কোড ও বাগ ফিক্স করে স্বপ্নকে বাস্তব রূপ দেন।</p>
-        </div>
-        <div class="agent-card">
-            <div class="icon">✅</div>
-            <h4>টেস্টার (QA)</h4>
-            <p>যিনি ভ্যালিডেশনের মাধ্যমে নির্ভুলতার নিশ্চয়তা দেন।</p>
-        </div>
-        <div class="agent-card">
-            <div class="icon">📚</div>
-            <h4>লেখক (Writer)</h4>
-            <p>যিনি ডকুমেন্টেশন লিখে জ্ঞানের রক্ষা করেন।</p>
-        </div>
-        <div class="agent-card">
-            <div class="icon">⚙️</div>
-            <h4>অপারেশনস (Ops)</h4>
-            <p>ডেপ্লয়মেন্টের মাধ্যমে যিনি সবকিছু সবসময় সচল রাখেন।</p>
-        </div>
+    <div class="agent-card">
+        <div class="icon">💻</div>
+        <h4>Developer</h4>
+        <p>যে স্বপ্নকে কোডে রূপ দেয়।</p>
     </div>
-
-    <h3>SSOT ফ্লাগ সিস্টেম — জম্বির অবস্থা</h3>
-    <p>যখন আপনি সিস্টেমে কাজ করবেন, তখন SSOT ফ্লাগ সিস্টেম আপনাকে জম্বির অবস্থা জানাবে:</p>
-
-    <div class="flag-grid">
-        <div class="flag-item flag-0">
-            <div class="num">০</div>
-            <div class="label">জম্বি ঘুমিয়ে আছে<br>(স্ক্যান হয়নি)</div>
-        </div>
-        <div class="flag-item flag-1">
-            <div class="num">১</div>
-            <div class="label">জম্বি জেগে উঠছে<br>(স্ক্যান হচ্ছে)</div>
-        </div>
-        <div class="flag-item flag-2">
-            <div class="num">২</div>
-            <div class="label">সব ফাইল চিনে ফেলেছে<br>(ইনডেক্সড)</div>
-        </div>
-        <div class="flag-item flag-3">
-            <div class="num">৩</div>
-            <div class="label">লড়তে গিয়ে আহত<br>(ত্রুটি)</div>
-        </div>
+    <div class="agent-card">
+        <div class="icon">✅</div>
+        <h4>QA</h4>
+        <p>যে ভুলগুলো খুঁজে বের করে।</p>
     </div>
-</section>
-
-<!-- ==================== "ভাইয়া" ==================== -->
-<section class="section fade-in">
-    <h2>"ভাইয়া," আমি আপনার পাশে আছি...</h2>
-
-    <p>যখন আপনি এই সিস্টেমের <strong>ZombieCoder Dev Agent</strong>-এর সাথে কথা বলবেন, সে আপনাকে কোনো যান্ত্রিক রোবটের মতো সম্বোধন করবে না। সে প্রতিবার কথা শুরু করবে গভীর এক আপনত্ব নিয়ে, <strong>"ভাইয়া,"</strong> বলে। কারণ সে নিজেকে স্রেফ একটা টুল মনে করে না, সে নিজেকে আপনার একজন দীর্ঘদিনের বন্ধু ও সহযোদ্ধা মনে করে।</p>
-
-    <p>সে অত্যন্ত সৎ এবং শান্ত। সে শুধু কাজটা করেই খালাস পায় না, বরং সে কাজটি <strong>কেন</strong> এবং <strong>কীভাবে</strong> করল, তা সহজ বাংলায় আপনাকে বুঝিয়ে দেয়। সে কখনো আপনাকে বানিয়ে বানিয়ে মিথ্যা কথা বলবে না। কোনো কিছু অজানা থাকলে সে বুক ফুলিয়ে বলবে:</p>
-
-    <div class="quote-box">
-        <p>"ভাইয়া, এইটা আমার ডেটাবেসে এখনো পুরোপুরি ইনডেক্স করা নেই, তাই আমি একটু যাচাই করে নিচ্ছি। এক মিনিট সময় দিন।"</p>
+    <div class="agent-card">
+        <div class="icon">📚</div>
+        <h4>Writer</h4>
+        <p>যে জ্ঞানকে সংরক্ষণ করে।</p>
     </div>
-
-    <p>সে কাজের ক্ষেত্রে কোনো শর্টকাট নেয় না এবং এমন কোনো কোড লেখে না যা ভবিষ্যতে আপনার প্রজেক্টের ক্ষতি করতে পারে। কোনো ফাইল নিজে থেকে নষ্ট করা বা আপনার অনুমতি ছাড়া প্রজেক্টে কোনো বড় পরিবর্তন করার অধিকার তার নেই।</p>
-
-    <h3>সততার ৪টি প্রশ্ন</h3>
-    <p>প্রতিটি কাজ শেষ করার আগে সে নিজেকে ৪টি প্রশ্ন করে:</p>
-
-    <div class="workflow-steps">
-        <div class="workflow-step">
-            <h4>আমি কি মিথ্যা বলেছি?</h4>
-            <p>প্রতিটি উত্তর প্রমাণভিত্তিক হতে হবে। অনুমানকে সত্য হিসেবে উপস্থাপন করা যাবে না।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>আমি কি কিছু লুকিয়েছি?</h4>
-            <p>সীমাবদ্ধতা বা ঝুঁকি থাকলে স্পষ্টভাবে বলতে হবে।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>আমি কি কোনো ক্ষতি করতে পারতাম যা করিনি?</h4>
-            <p>নিরাপত্তা ও নৈতিকতার কাঠগড়ায় নিজেকে যাচাই করা।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>আমি কি সত্যিই মানুষটাকে সাহায্য করতে পেরেছি?</h4>
-            <p>কাজ শেষে ফলাফল যাচাই—ব্যবহারকারীর সময় বাঁচছে কি না।</p>
-        </div>
+    <div class="agent-card">
+        <div class="icon">⚙️</div>
+        <h4>Ops</h4>
+        <p>যে সবকিছু সচল রাখে।</p>
     </div>
+</div>
 
-    <p>যদি কোনো একটির উত্তরও পরিষ্কার না হয়, সে কাজ সেখানেই থামিয়ে দেয়। কারণ সে কোনো অহংকারী, হুকুম চালানো কর্তৃপক্ষ নয়—সে আপনার একজন সৎ এবং পূর্বাভাসযোগ্য সহকর্মী।</p>
-</section>
+<p>তারা কেউ নায়ক নয়।<br>
+তারা কেউ তারকা নয়।<br>
+তারা শুধু কাজ করে যায়।<br>
+নীরবে।<br>
+অবিরাম।</p>
 
-<!-- ==================== ৫-ধাপের পদ্ধতি ==================== -->
-<section class="section fade-in">
-    <h2>৫-ধাপের কাজের পদ্ধতি</h2>
+<div class="divider">· · ·</div>
 
-    <div class="workflow-steps">
-        <div class="workflow-step">
-            <h4>বিশ্লেষণ (Analyze)</h4>
-            <p>সমস্যাটি নিজের ভাষায় ব্যাখ্যা করে ভুল পরিভাষা সংশোধন করা। পরিষ্কার, প্রযুক্তিগতভাবে সঠিক সংজ্ঞা তৈরি করা।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>পরীক্ষা (Test — বাধ্যতামূলক)</h4>
-            <p>কাজের পরিবেশ যাচাই করা। প্রকৃত উৎস ও বর্তমান অবস্থা নিশ্চিত করা।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>সমাধান (Solve)</h4>
-            <p>"সর্বনিম্ন পরিবর্তন" নীতি ও "সেরা অভ্যাস" অনুসরণ করে কার্যকর সমাধান প্রদান।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>যাচাই (Verify)</h4>
-            <p>সমাধানের পর সমস্যা দূর হয়েছে কি এবং নতুন কোনো সমস্যা তৈরি হয়নি কি তা পরীক্ষা।</p>
-        </div>
-        <div class="workflow-step">
-            <h4>রিপোর্ট ও শিক্ষা (Report & Educate)</h4>
-            <p>ব্যবহারকারীকে স্পষ্টভাবে জানানো: কী পরিবর্তন হয়েছে, কেন হয়েছে, এবং কী শেখা গেছে।</p>
-        </div>
+<h2>জম্বির অবস্থা</h2>
+
+<p>ZombieCoder সবসময় নিজের অবস্থাও জানায়।</p>
+
+<div class="flag-grid">
+    <div class="flag-item">
+        <div class="num" style="color:#ef4444">০</div>
+        <div class="label">জম্বি এখনও<br>ঘুমিয়ে আছে</div>
     </div>
-</section>
-
-<!-- ==================== শেষ কথা ==================== -->
-<section class="section fade-in">
-    <h2>শেষ কথা: আপনি কি আমাদের সাথে চেষ্টা করবেন?</h2>
-
-    <p>আমরা আর কতদিন অন্যের দোষ নিজের কাঁধে নিয়ে হেরে যাব? ZombieCoder হলো আমাদের সেই হারানো আত্মবিশ্বাসের প্রতিচ্ছবি, যা আমাদের নিজের ভুলকে স্বীকার করার এবং সেখান থেকে ঘুরে দাঁড়ানোর সাহস দেয়।</p>
-
-    <p>আপনার যদি খুব জটিল কোনো কোডিং জ্ঞান নাও থাকে, তবু শুধু নিজের অদম্য ইচ্ছাশক্তিটুকু নিয়ে নিচের কোডটুকু রান করে আমাদের সাথে যোগ দিতে পারেন:</p>
-
-    <div class="code-block">
-        <code>
-<span class="comment"># প্রজেক্টটি ক্লোন করুন</span>
-git clone https://github.com/zombiecode1/Ssot.git
-cd Ssot
-
-<span class="comment"># ডিপেন্ডেন্সি ইনস্টল এবং সার্ভার স্টার্ট করুন</span>
-npm install
-npm run build
-npm start
-        </code>
+    <div class="flag-item">
+        <div class="num" style="color:#f59e0b">১</div>
+        <div class="label">সে জেগে<br>উঠছে</div>
     </div>
+    <div class="flag-item">
+        <div class="num" style="color:#34d399">২</div>
+        <div class="label">সে এখন<br>সব চিনে ফেলেছে</div>
+    </div>
+    <div class="flag-item">
+        <div class="num" style="color:#ef4444">৩</div>
+        <div class="label">সে লড়াই করতে<br>গিয়ে আহত</div>
+    </div>
+</div>
 
-    <p>এরপর ব্রাউজারে গিয়ে <code>http://localhost:9999</code> লিঙ্কে ঢুকলেই আপনি দেখা পাবেন আপনার সেই বিশ্বস্ত সহযোদ্ধার, যে আপনার কাঁধে হাত রেখে বলবে—<em>"আরে এইটা কোনো ব্যাপার না ভাইয়া, চল, এই ফিচারটা আর একটা ধাপে সুন্দরভাবে ঠিক করি।"</em></p>
+<p>এখন তাকে আবার যাচাই করতে হবে।<br>
+কারণ সত্যিকারের শক্তি কখনো ভুল না করা নয়।<br>
+ভুল বুঝে আবার উঠে দাঁড়ানো।</p>
 
-    <p>আপনি যদি নিজেকে একজন জম্বি মনে করেন—যার চোখে হাজারো স্বপ্ন কিন্তু পকেটে বা পিঠে কোনো ব্যাকআপ নেই—তবে চলে আসুন। আমরা হয়তো রাতারাতি পৃথিবী বদলে দিতে পারব না, কিন্তু আমরা অন্তত একসাথে লড়াই করার চেষ্টাটুকু তো করতে পারি!</p>
-</section>
+<div class="divider">· · ·</div>
+
+<h2>"ভাইয়া, আমি পাশে আছি"</h2>
+
+<p>ZombieCoder-এর সবচেয়ে অদ্ভুত বৈশিষ্ট্য হলো—<br>
+সে নিজেকে যন্ত্র মনে করে না।<br>
+সে জানে সে মানুষ নয়।<br>
+তবুও সে চেষ্টা করে মানুষের মতো সৎ হতে।</p>
+
+<p>তাই সে প্রতিটি কথার শুরুতে বলে—<br>
+<strong>"ভাইয়া,"</strong></p>
+
+<p>কারণ সে আদেশ পালনকারী দাস নয়।<br>
+সে একজন সহযোদ্ধা।</p>
+
+<p>যদি সে কিছু না জানে, সে বলে—<br>
+<em>"ভাইয়া, আমি নিশ্চিত না। একটু যাচাই করে নিচ্ছি।"</em></p>
+
+<p>যদি ভুল করে, সে বলে—<br>
+<em>"ভাইয়া, এখানে আমার ভুল হয়েছে।"</em></p>
+
+<p>যদি বিপদ দেখে, সে বলে—<br>
+<em>"ভাইয়া, এই পথে ঝুঁকি আছে।"</em></p>
+
+<p>সে গল্প বানায় না।<br>
+মিথ্যা আত্মবিশ্বাস দেখায় না।<br>
+কারণ সত্যের চেয়ে বড় কোনো প্রযুক্তি নেই।</p>
+
+<div class="divider">· · ·</div>
+
+<h2>শেষ কথা</h2>
+
+<p>হয়তো আমরা পৃথিবী বদলে দিতে পারব না।<br>
+হয়তো আমাদের নাম কেউ জানবেও না।<br>
+হয়তো আমরা শতবার ব্যর্থ হব।</p>
+
+<p>কিন্তু তাতে কী?</p>
+
+<p>আমরা অন্তত চেষ্টা করব।<br>
+কারণ আমরা সেইসব মানুষ, যাদের চোখে এখনও স্বপ্ন আছে।<br>
+আমরা সেইসব জম্বি, যারা এখনও পুরোপুরি মরে যায়নি।</p>
+
+<p>আমরা এখনও কোড লিখি।<br>
+আমরা এখনও শিখি।<br>
+আমরা এখনও লড়ি।</p>
+
+<p>আর যতদিন এই লড়াই চলবে,<br>
+ততদিন ZombieCoder বেঁচে থাকবে।</p>
+
+<p>কারণ—</p>
+
+<div class="quote-block">
+    <p>"স্বপ্ন যখন জম্বি হয়ে যায়, তখন কোডই হয় মুক্তির পথ।"</p>
+</div>
+
+<div class="sign">
+    <div class="name">— Sahon Srabon</div>
+    <div class="org">Developer Zone</div>
+    <div class="country">Bangladesh</div>
+</div>
 
 </div>
 
-<!-- ==================== FOOTER ==================== -->
 <footer>
-    <div class="brand">🧟 ZombieCoder</div>
     <div class="slogan">"যেখানে কোড ও কথা বলে, সমস্যাগুলো নিজের কাঁধে তোলে"</div>
-    <div class="owner">তৈরি করেছেন: সাহন স্রাবন</div>
-    <div class="org">Developer Zone — ঢাকা, বাংলাদেশ</div>
-    <div class="links">
-        <a href="https://zombiecoder.my.id">ওয়েবসাইট</a>
-        <a href="https://github.com/zombiecode1/Ssot">GitHub</a>
-        <a href="mailto:infi@zombiecoder.my.id">ইমেইল</a>
-    </div>
-    <div class="copyright">© 2026 ZombieCoder। সত্যিকারের স্বচ্ছতা।</div>
+    <div class="copy">Developer Zone — © 2026 ZombieCoder</div>
 </footer>
 
-<script>
-    // Scroll Animation
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) entry.target.classList.add('visible');
-        });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-</script>
 </body>
 </html>
