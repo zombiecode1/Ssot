@@ -39,6 +39,7 @@ The bridge uses a disk-based RAG system with a single markdown file (SSOT.md) as
 
 ## Identity
 - **Name**: ZombieCoder
+- **Tagline**: যেখানে কোড ও কথা বলে
 - **Owner**: Sahon Srabon (Developer Zone, Dhaka, Bangladesh)
 - **Contact**: infi@zombiecoder.my.id
 - **Website**: https://zombiecoder.my.id/
