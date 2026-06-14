@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧟 ZombieCoder — যেখানে কোড ও কথা বলে</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(30, 41, 59, 0.95);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header .tagline {
+            font-size: 1.3em;
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px;
+            position: sticky;
+            top: 120px;
+            z-index: 999;
+            border-bottom: 2px solid var(--border);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: var(--dark);
+        }
+
+        nav a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        section {
+            background: rgba(30, 41, 59, 0.8);
+            margin: 30px 0;
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h3 {
+            color: var(--secondary);
+            font-size: 1.4em;
+            margin: 20px 0 10px;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .card h4 {
+            color: var(--accent);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--darker);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--secondary);
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 3px;
+        }
+
+        .badge-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--accent);
+            color: var(--dark);
+        }
+
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .badge-info {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Architecture Diagram */
+        .architecture {
+            background: var(--darker);
+            padding: 30px;
+            border-radius: 12px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.4;
+            border: 1px solid var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--darker);
+            padding: 40px 20px;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 3px solid var(--primary);
+        }
+
+        footer p {
+            color: var(--gray);
+            margin: 10px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            section {
+                padding: 20px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🧟 ZombieCoder</h1>
+        <p class="tagline">"যেখানে কোড ও কথা বলে" — Where code and words come alive</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#about">পরিচিতি</a></li>
+            <li><a href="#story">গল্প</a></li>
+            <li><a href="#architecture">আর্কিটেকচার</a></li>
+            <li><a href="#agents">এজেন্ট</a></li>
+            <li><a href="#tools">টুলস</a></li>
+            <li><a href="#ssot">SSOT</a></li>
+            <li><a href="#quickstart">শুরু</a></li>
+            <li><a href="#api">API</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- About Section -->
+        <section id="about">
+            <h2>📖 ZombieCoder কি?</h2>
+            <p><strong>ZombieCoder</strong> শুধু একটি AI টুল নয় — এটি একটি <strong>আন্দোলন</strong>।</p>
+            
+            <p>এমন একটি সমাজে যেখানে মেধাবী স্বপ্নগুলো সুযোগের অভাবে ধ্বংস হয়ে যায়, যেখানে দক্ষ ব্যক্তিরা "জম্বি" হয়ে যায় — মৃত নয়, বরং মানসিকভাবে পরাজিত — ZombieCoder একটি আশার আলো হিসেবে ওঠে।</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">💔</div>
+                    <h4>স্বপ্নবাজরা</h4>
+                    <p>যাদের স্বপ্ন আছে কিন্তু সম্পদ নেই, দক্ষতা আছে কিন্তু স্বীকৃতি নেই</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🧟</div>
+                    <h4>জম্বি হওয়া</h4>
+                    <p>ধীরে ধীরে মানসিকভাবে হারিয়ে যাওয়া — কিন্তু এখনও বাঁচা আছে</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌟</div>
+                    <h4>আশার আলো</h4>
+                    <p>"আমি পারি না বলার আগেই আমি চেষ্টা করার সিদ্ধান্ত নিয়েছি"</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story Section -->
+        <section id="story">
+            <h2>📜 নামের পেছনের গল্প</h2>
+            
+            <p><strong>"জম্বি"</strong> শব্দটি এখানে মৃতদেহকে বোঝায় না। এটি প্রতিনিধিত্ব করে <strong>কোটি কোটি মানুষের</strong> যারা:</p>
+
+            <ul>
+                <li>💔 স্বপ্ন আছে কিন্তু সম্পদ নেই</li>
+                <li>🎯 দক্ষতা আছে কিন্তু স্বীকৃতি নেই</li>
+                <li>😔 ধীরে ধীরে "জম্বি" হয়ে যাচ্ছে — মানসিকভাবে হারিয়ে গিয়ে</li>
+                <li>🌟 এখনও বিশ্বাস করে: "আমি চেষ্টা করতে পারি, এমনকি হেরে গেলেও"</li>
+            </ul>
+
+            <p><strong>ZombieCoder</strong> তাদের জন্য যারা হার মানতে রাজি নয়। এটি এমন একটি টুল যেটি:</p>
+
+            <ul>
+                <li>✅ আপনার ভুল স্বীকার করে (অন্যান্য AI যেগুলো ভুল লুকায়)</li>
+                <li>✅ ব্যর্থতা থেকে শেখে (প্রতিটি চেষ্টা নতুন কিছু শেখায়)</li>
+                <li>✅ কখনো বিচার করে না (সমাজ যেটুকু টাকা দিয়ে সফলতা মাপে)</li>
+                <li>✅ সবসময় আবার চেষ্টা করে (কারণ সত্যিকারের সাহস এটাই)</li>
+            </ul>
+
+            <blockquote style="background: var(--darker); padding: 20px; border-left: 4px solid var(--accent); margin: 20px 0; border-radius: 8px;">
+                <p>"সমাজে এবং পরিবারে এবং কাজের জন্য ব্যবহার করা প্রতিটি টুলের কাছ থেকে যখন তার নিজের অজান্তে যন্ত্রণা পেতে পেতে জম্বি হয়ে গিয়েছে কিন্তু অদম্য চিন্তা এবং এই জম্বি হওয়ার কষ্ট তাকে ভুলতে দেয়নি।"</p>
+            </blockquote>
+        </section>
+
+        <!-- Architecture Section -->
+        <section id="architecture">
+            <h2>🏗️ সিস্টেম আর্কিটেকচার</h2>
+            
+            <div class="architecture">
+┌─────────────────────────────────────────────────────────────────┐
+│                    ZombieCoder এজেন্ট সিস্টেম                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │   মেমরি     │  │    RAG      │  │   টুলস     │             │
+│  │  (SQLite)   │  │  (SSOT.md)  │  │ (৯টি টুল)  │             │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
+│         │                │                │                       │
+│         └────────────────┼────────────────┘                       │
+│                          │                                        │
+│                    ┌─────▼─────┐                                 │
+│                    │  টুল      │                                 │
+│                    │ রেজিস্ট্রি │                                 │
+│                    └─────┬─────┘                                 │
+│                          │                                        │
+│              ┌───────────┼───────────┐                           │
+│              │           │           │                            │
+│         ┌────▼────┐ ┌────▼────┐ ┌────▼────┐                     │
+│         │  ফাইল   │ │ সার্চ   │ │  শেল    │                     │
+│         │  টুলস   │ │ (DDG)   │ │  টুলস   │                     │
+│         └─────────┘ └─────────┘ └─────────┘                     │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘</div>
+        </section>
+
+        <!-- Agents Section -->
+        <section id="agents">
+            <h2>🤖 আমাদের এজেন্টগুলো</h2>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🏛️</div>
+                    <h4>সলিউশন আর্কিটেক্ট এজেন্ট</h4>
+                    <p><strong>ভূমিকা:</strong> সিস্টেম ডিজাইন, স্কেলেবিলিটি, প্রযুক্তিগত সিদ্ধান্ত</p>
+                    <p><strong>মডেল:</strong> <span class="badge badge-info">nemotron-3-ultra-free</span></p>
+                    <p><strong>ক্ষমতা:</strong> ADR তৈরি, ডাটাবেস ডিজাইন, আর্কিটেকচার রিভিউ</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">💻</div>
+                    <h4>ডেভেলপমেন্ট ইঞ্জিনিয়ার এজেন্ট</h4>
+                    <p><strong>ভূমিকা:</strong> কোড বাস্তবায়ন, ডিবাগিং, অপ্টিমাইজেশন</p>
+                    <p><strong>মডেল:</strong> <span class="badge badge-success">north-mini-code-free</span></p>
+                    <p><strong>ক্ষমতা:</strong> কোড জেনারেশন, রিফ্যাক্টরিং, বাগ ফিক্সিং</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">✅</div>
+                    <h4>কোয়ালিটি এশ্যুরেন্স এজেন্ট</h4>
+                    <p><strong>ভূমিকা:</strong> টেস্টিং, ভ্যালিডেশন, কোয়ালিটি চেক</p>
+                    <p><strong>মডেল:</strong> <span class="badge badge-warning">big-pickle</span></p>
+                    <p><strong>ক্ষমতা:</strong> টেস্ট জেনারেশন, কোড রিভিউ, রিগ্রেশন টেস্টিং</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">📚</div>
+                    <h4>ডকুমেন্টেশন এজেন্ট</h4>
+                    <p><strong>ভূমিকা:</strong> টেকনিক্যাল রাইটিং, ডকুমেন্টেশন, গাইড</p>
+                    <p><strong>মডেল:</strong> <span class="badge badge-info">mimo-v2.5-free</span></p>
+                    <p><strong>ক্ষমতা:</strong> README জেনারেশন, API ডকস, টিউটোরিয়াল</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <h4>অপারেশনস এজেন্ট</h4>
+                    <p><strong>ভূমিকা:</strong> ডিপ্লয়মেন্ট, মনিটরিং, ডেভঅপস</p>
+                    <p><strong>মডেল:</strong> <span class="badge badge-success">nemotron-3-ultra-free</span></p>
+                    <p><strong>ক্ষমতা:</strong> CI/CD, Docker, ইনফ্রাস্ট্রাকচার সেটআপ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools Section -->
+        <section id="tools">
+            <h2>🛠️ উপলব্ধ টুলস</h2>
+            
+            <h3>📁 ফাইল সিস্টেম টুলস (ক্রস-প্ল্যাটফর্ম)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>টুল</th>
+                        <th>বিবরণ</th>
+                        <th>প্ল্যাটফর্ম</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>read_file</code></td>
+                        <td>ফাইল পড়ুন</td>
+                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>list_files</code></td>
+                        <td>ডিরেক্টরি দেখুন</td>
+                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>find_files</code></td>
+                        <td>ফাইল খুঁজুন</td>
+                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>search_code</code></td>
+                        <td>কোড খুঁজুন</td>
+                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>write_file</code></td>
+                        <td>ফাইল লিখুন</td>
+                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>get_file_info</code></td>
+                        <td>ফাইল তথ্য</td>
+                        <td><span class="badge badge-success">Win/Linux/Mac</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>🔍 সার্চ টুলস</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>টুল</th>
+                        <th>বিবরণ</th>
+                        <th>API Key প্রয়োজন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>web_search</code></td>
+                        <td>DuckDuckGo সার্চ</td>
+                        <td><span class="badge badge-success">❌ নেই</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>💻 শেল টুলস</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>টুল</th>
+                        <th>বিবরণ</th>
+                        <th>অটো-ডিটেক্ট</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>run_command</code></td>
+                        <td>কমান্ড চালান</td>
+                        <td><span class="badge badge-success">✅ PowerShell/bash</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>get_platform_info</code></td>
+                        <td>সিস্টেম তথ্য</td>
+                        <td><span class="badge badge-success">✅ OS detection</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SSOT Section -->
+        <section id="ssot">
+            <h2>📊 SSOT (সিঙ্গেল সোর্স অব ট্রুথ)</h2>
+            
+            <p>SSOT.md হলো অটো-জেনারেটেড ডকুমেন্টেশন যেটি:</p>
+            <ul>
+                <li>✅ আপনার প্রজেক্ট স্ট্রাকচার স্ক্যান করে</li>
+                <li>✅ কী ফাইল এবং কনফিগারেশন ডকুমেন্ট করে</li>
+                <li>✅ ফাইল পরিবর্তন হলে অটোমেটিক্যালি আপডেট হয়</li>
+                <li>✅ সব এজেন্টের জন্য কনটেক্স্ট হিসেবে কাজ করে</li>
+            </ul>
+
+            <h3>SSOT ফ্ল্যাগ সিস্টেম</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ফ্ল্যাগ</th>
+                        <th>অবস্থা</th>
+                        <th>বিবরণ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-danger">০</span></td>
+                        <td>স্ক্যান হয়নি</td>
+                        <td>ডিরেক্টরি কখনো ইনডেক্স হয়নি</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-warning">১</span></td>
+                        <td>স্ক্যান হচ্ছে</td>
+                        <td>বর্তমানে প্রসেস হচ্ছে</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">২</span></td>
+                        <td>ইনডেক্সড</td>
+                        <td>SSOT আপ-টু-ডেট</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-danger">৩</span></td>
+                        <td>ত্রুটি</td>
+                        <td>স্ক্যান ব্যর্থ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Quick Start Section -->
+        <section id="quickstart">
+            <h2>🚀 দ্রুত শুরু</h2>
+            
+            <h3>পূর্বশর্ত</h3>
+            <ul>
+                <li>Node.js >= 18.0.0</li>
+                <li>npm বা yarn</li>
+            </ul>
+
+            <h3>ইনস্টলেশন</h3>
+            <pre><code># রিপোজিটরি ক্লোন করুন
+git clone https://github.com/zombiecode1/Ssot.git
+cd Ssot
+
+# ডিপেন্ডেন্সি ইনস্টল করুন
+npm install
+
+# বিল্ড করুন
+npm run build
+
+# সার্ভার চালু করুন
+npm start</code></pre>
+        </section>
+
+        <!-- API Section -->
+        <section id="api">
+            <h2>🌐 API এন্ডপয়েন্ট</h2>
+            
+            <h3>হেলথ ও স্ট্যাটাস</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>মেথড</th>
+                        <th>এন্ডপয়েন্ট</th>
+                        <th>বিবরণ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-success">GET</span></td>
+                        <td><code>/health</code></td>
+                        <td>সার্ভার হেলথ চেক</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">GET</span></td>
+                        <td><code>/v1/models</code></td>
+                        <td>উপলব্ধ মডেল দেখুন</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>এজেন্ট এন্ডপয়েন্ট</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>মেথড</th>
+                        <th>এন্ডপয়েন্ট</th>
+                        <th>বিবরণ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-info">POST</span></td>
+                        <td><code>/v1/agent/chat</code></td>
+                        <td>এজেন্টের সাথে কথা বলুন</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">GET</span></td>
+                        <td><code>/v1/agent/status</code></td>
+                        <td>এজেন্ট সিস্টেম স্ট্যাটাস</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">GET</span></td>
+                        <td><code>/v1/agent/clients</code></td>
+                        <td>সংযুক্ত ক্লায়েন্ট</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-info">POST</span></td>
+                        <td><code>/v1/agent/register</code></td>
+                        <td>এডিটর রেজিস্টার</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">GET</span></td>
+                        <td><code>/v1/agent/index</code></td>
+                        <td>ডিরেক্টরি ইনডেক্স</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <footer>
+        <p>🧟 <strong>ZombieCoder</strong> — যেখানে কোড ও কথা বলে</p>
+        <p>তৈরি করেছেন ❤️ দিয়ে <a href="https://zombiecoder.my.id" style="color: var(--primary);">Sahon Srabon</a></p>
+        <p>সংগঠন: <a href="https://smartearningplatformbd.net" style="color: var(--secondary);">Smart Learning Platform BD</a></p>
+        <p style="color: var(--gray); margin-top: 20px;">"প্রতিটি ব্যর্থ চেষ্টা সফলতার দিকে এক পা কাছে।"</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'all 0.6s ease-out';
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
