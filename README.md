@@ -35,6 +35,29 @@
 
 ---
 
+## 🔍 "Local First" — The Truth
+
+> "Nothing in this world is truly local. Your computer's motherboard is Intel, graphics card NVIDIA, operating system Windows, editor VS Code, GitHub, browser Google Chrome — without these, a person can't live in modern society."
+
+**We don't lie.** When we say "Local-First", we mean:
+
+| Aspect | The Truth |
+|--------|-----------|
+| AI Model | Runs on your computer (local LLM) |
+| Data Storage | Stays on your hard drive |
+| Conversations | Saved in SQLite file on your computer |
+| Network | Works offline (local model) |
+| Cost | Completely free |
+
+**What we admit:**
+- ❌ Completely local — not possible
+- ❌ No data ever leaves — that's a lie
+- ✅ You have maximum control over your data
+
+Read more: [Local First — The Truth](docs/local-first.html)
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites

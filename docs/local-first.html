@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local First — সত্যি কথা | ZombieCoder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans Bengali', 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.9;
+            font-size: 17px;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3em;
+            color: #94a3b8;
+            max-width: 700px;
+        }
+
+        /* Content */
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 1.8em;
+            color: #f59e0b;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f59e0b;
+        }
+
+        .section h3 {
+            font-size: 1.3em;
+            color: #818cf8;
+            margin: 25px 0 15px;
+        }
+
+        .section p {
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+
+        /* Truth Box */
+        .truth-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .truth-box h4 {
+            color: #ef4444;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .truth-box p {
+            color: #fca5a5;
+        }
+
+        /* Honesty Box */
+        .honesty-box {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .honesty-box h4 {
+            color: #34d399;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        /* Dependency List */
+        .dependency-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .dependency-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #2d2d44;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dependency-list li:last-child {
+            border-bottom: none;
+        }
+
+        .dependency-list .icon {
+            font-size: 1.5em;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .dependency-list .name {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        .dependency-list .desc {
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: #1a1a2e;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        .comparison-table th {
+            background: #2d2d44;
+            color: #818cf8;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table .local {
+            color: #34d399;
+        }
+
+        .comparison-table .external {
+            color: #f59e0b;
+        }
+
+        /* Quote */
+        .quote-box {
+            background: #1a1a2e;
+            border-left: 4px solid #818cf8;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .quote-box p {
+            font-style: italic;
+            color: #e2e8f0;
+            font-size: 1.1em;
+        }
+
+        .quote-box .author {
+            margin-top: 15px;
+            color: #64748b;
+            font-style: normal;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 30px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+            border-top: 1px solid #2d2d44;
+        }
+
+        footer .brand {
+            font-size: 1.8em;
+            color: #818cf8;
+            margin-bottom: 15px;
+        }
+
+        footer .tagline {
+            color: #94a3b8;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        footer .copyright {
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2em; }
+            .content { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div>
+            <h1>Local First — সত্যি কথা</h1>
+            <p class="subtitle">"লোকাল" শব্দটি দিয়ে আমরা কী বুঝি, এবং বাস্তবে কী ঘটে — এই দুটোর মধ্যে পার্থক্য আছে। আজ সেই পার্থক্য স্বীকার করি।</p>
+        </div>
+    </section>
+
+    <div class="content">
+        <!-- Section 1: The Lie -->
+        <div class="section">
+            <h2>❌ "ডাটা বাহিরে যায় না" — এটি মিথ্যা</h2>
+            
+            <div class="truth-box">
+                <h4>সত্যি কথা:</h4>
+                <p>আপনার ডাটা বাহিরে যায়। প্রতিটি API কল, প্রতিটি নেটওয়ার্ক রিকোয়েস্ট, প্রতিটি সফটওয়্যার আপডেট — সবকিছু ডাটা বাইরে পাঠায়। এটি স্বীকার না করা অসততা।</p>
+            </div>
+
+            <p>
+                আমরা যখন বলি "ZombieCoder লোকাল-ফার্স্ট", তখন আমরা একটি আশ্বাস দিই যেটি বাস্তবতার সাথে মানানসই নয়। সত্যি কথা হলো — <strong>আপনার কম্পিউটারে কিছুই সম্পূর্ণ লোকাল নয়।</strong>
+            </p>
+        </div>
+
+        <!-- Section 2: What's Actually Local -->
+        <div class="section">
+            <h2>🔍 বাস্তবে কী "লোকাল"?</h2>
+            
+            <p>
+                "লোকাল" বলতে আমরা কী বুঝেছিলাম? — যেটুকু আপনার নিয়ন্ত্রণে আছে, যেটুকু আপনার কম্পিউটারে চলছে, যেটুকু দ্রুত কাজ করছে। কিন্তু এটি কি সত্যিই "লোকাল"?
+            </p>
+
+            <div class="quote-box">
+                <p>"বাস্তবিক অর্থে লোকাল বলতে দুনিয়ায় কিছুই নেই। কেন বলছি? আপনার কম্পিউটারের মাদারবোর্ড Intel, গ্রাফিক্স কার্ড NVIDIA, অপারেটিং সিস্টেম Windows, এডিটর VS Code, GitHub, ব্রাউজার Google Chrome — এগুলো ব্যতীত একজন মানুষ সভ্য সমাজে এখন থাকতে পারে না।"</p>
+                <div class="author">— সাহন স্রাবন, ZombieCoder এর প্রতিষ্ঠাতা</div>
+            </div>
+        </div>
+
+        <!-- Section 3: External Dependencies -->
+        <div class="section">
+            <h2>🌐 আপনার "লোকাল" কম্পিউটারের বাইরের নির্ভরশীলতা</h2>
+            
+            <ul class="dependency-list">
+                <li>
+                    <span class="icon">🔧</span>
+                    <div>
+                        <div class="name">মাদারবোর্ড — Intel / AMD</div>
+                        <div class="desc">চীনা, তাইওয়ানি, আমেরিকান কারখানায় তৈরি। প্রতিটি চিপে মাইক্রোকোড আছে যেটা নিয়ন্ত্রণ করে Intel।</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">🎮</span>
+                    <div>
+                        <div class="name">গ্রাফিক্স কার্ড — NVIDIA / AMD</div>
+                        <div class="desc">ড্রাইভার ডাউনলোড করতে NVIDIA সার্ভারে যেতে হয়। প্রতিটি আপডেট ডাটা পাঠায়।</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">💻</span>
+                    <div>
+                        <div class="name">অপারেটিং সিস্টেম — Windows</div>
+                        <div class="desc">Microsoft এর সার্ভার থেকে ডাউনলোড। টেলিমেট্রি পাঠায়। আপডেটের জন্য ইন্টারনেট লাগে।</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">📝</span>
+                    <div>
+                        <div class="name">এডিটর — VS Code / Cursor</div>
+                        <div class="desc">GitHub (Microsoft) এর সার্ভার থেকে ডাউনলোড। এক্সটেনশন মার্কেটপ্লেস থেকে আসে।</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">🔀</span>
+                    <div>
+                        <div class="name">Git & GitHub</div>
+                        <div class="desc">কোড স্টোর হয় Microsoft এর সার্ভারে। প্রতিটি push ডাটা বাইরে পাঠায়।</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">🌐</span>
+                    <div>
+                        <div class="name">ব্রাউজার — Google Chrome</div>
+                        <div class="desc">Google Chromium এর উপর ভিত্তি। V8 ইঞ্জিন Google কন্ট্রোল করে। টেলিমেট্রি Google এ যায়।</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="icon">📱</span>
+                    <div>
+                        <div class="name">অ্যান্ড্রয়েড — Google</div>
+                        <div class="desc">ফোনের প্রতিটি অ্যাপ Google Play Store এর মাধ্যমে আসে। Google সবকিছু ট্র্যাক করে।</div>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="truth-box">
+                <h4>বাস্তবতা:</h4>
+                <p>এগুলো ছাড়া আপনি সভ্য সমাজে থাকতে পারবেন না। তাহলে "লোকাল" বলতে কী বোঝা যায়?</p>
+            </div>
+        </div>
+
+        <!-- Section 4: What We Actually Mean -->
+        <div class="section">
+            <h2>✅ তাহলে "লোকাল-ফার্স্ট" দিয়ে আমরা কী বোঝাই?</h2>
+            
+            <p>
+                আমরা যখন "লোকাল-ফার্স্ট" বলি, তখন আমরা বোঝাই — <strong>আপনার নিয়ন্ত্রণের সীমার মধ্যে সর্বোচ্চ ক্ষমতা আপনার হাতে দেওয়া।</strong> এটি সম্পূর্ণ লোকাল নয়, কিন্তু এটি <strong>আপনার পক্ষে সেরা সম্ভাব্য বিকল্প।</strong>
+            </p>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>বিষয়</th>
+                        <th>সম্পূর্ণ বাইরের (Cloud)</th>
+                        <th>ZombieCoder (লোকাল-ফার্স্ট)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>AI মডেল</td>
+                        <td class="external">OpenAI/Google সার্ভারে চলে</td>
+                        <td class="local">আপনার কম্পিউটারে চলে (লোকাল LLM)</td>
+                    </tr>
+                    <tr>
+                        <td>ডাটা স্টোরেজ</td>
+                        <td class="external">Cloud সার্ভারে থাকে</td>
+                        <td class="local">আপনার হার্ড ডিস্কে থাকে</td>
+                    </tr>
+                    <tr>
+                        <td>কনভারসেশন</td>
+                        <td class="external">কোম্পানির ডাটাবেসে সেভ হয়</td>
+                        <td class="local">SQLite ফাইলে আপনার কম্পিউটারে সেভ হয়</td>
+                    </tr>
+                    <tr>
+                        <td>নেটওয়ার্ক</td>
+                        <td class="external">ইন্টারনেট ছাড়া কাজ করে না</td>
+                        <td class="local">ইন্টারনেট ছাড়াও কাজ করে (লোকাল মডেল)</td>
+                    </tr>
+                    <tr>
+                        <td>কোস্ট</td>
+                        <td class="external">মাসিক সাবস্ক্রিপশন লাগে</td>
+                        <td class="local">সম্পূর্ণ বিনামূল্যে</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 5: What We Promise -->
+        <div class="section">
+            <h2>🤝 আমরা কী প্রতিশ্রুতি দিই?</h2>
+            
+            <div class="honesty-box">
+                <h4>আমাদের সত্যিকারের প্রতিশ্রুতি:</h4>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 8px 0; color: #e2e8f0;">✅ AI মডেলটি আপনার কম্পিউটারেই চলবে (লোকাল LLM)</li>
+                    <li style="padding: 8px 0; color: #e2e8f0;">✅ আপনার কনভারসেশন ডাটা আপনার কম্পিউটারেই সেভ হবে</li>
+                    <li style="padding: 8px 0; color: #e2e8f0;">✅ আমরা আপনার ডাটা তৃতীয় পক্ষকে বিক্রি করব না</li>
+                    <li style="padding: 8px 0; color: #e2e8f0;">✅ আপনি যখন চান, তখন সবকিছু ডিলিট করতে পারবেন</li>
+                    <li style="padding: 8px 0; color: #e2e8f0;">✅ সোর্স কোড Open Source — আপনি যাচাই করতে পারবেন</li>
+                </ul>
+            </div>
+
+            <div class="truth-box">
+                <h4>আমরা যা স্বীকার করি:</h4>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 8px 0; color: #fca5a5;">❌ সম্পূর্ণ লোকাল — এটি সম্ভব নয়</li>
+                    <li style="padding: 8px 0; color: #fca5a5;">❌ কোনো ডাটা বাইরে যায় না — এটি মিথ্যা</li>
+                    <li style="padding: 8px 0; color: #fca5a5;">❌ ইন্টারনেট ছাড়া সবকিছু কাজ করে — এটি অসম্ভব</li>
+                    <li style="padding: 8px 0; color: #fca5a5;">❌ প্রাইভেসি 100% — এটি বাস্তবসম্মত নয়</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 6: Our Philosophy -->
+        <div class="section">
+            <h2>💡 আমাদের দর্শন</h2>
+            
+            <div class="quote-box">
+                <p>"আমরা বিশ্বাস করি — আপনি আপনার সিস্টেমের মালিক। আমরা শুধু একটি টুল দিই যেটি আপনার সাথে মিথ্যা বলে না। আমরা বলি — 'এটি আপনার কম্পিউটারে চলে, এটি আপনার ডাটা রাখে, এবং এটি আপনার নিয়ন্ত্রণে।' এটি সত্যি কথা। এটিই আমাদের প্রতিশ্রুতি।"</p>
+                <div class="author">— ZombieCoder টিম</div>
+            </div>
+
+            <p>
+                "লোকাল-ফার্স্ট" শব্দটি দিয়ে আমরা বোঝাই — <strong>আপনি আপনার ডাটার উপর সর্বোচ্চ নিয়ন্ত্রণ রাখতে পারেন।</strong> আপনি জানবেন আপনার ডাটা কোথায় আছে, কে দেখতে পারে, এবং আপনি কখন ডিলিট করতে চান। এটি সম্পূর্ণ প্রাইভেসি নয়, কিন্তু এটি <strong>সম্ভাব্য সেরা প্রাইভেসি।</strong>
+            </p>
+        </div>
+
+        <!-- Section 7: Conclusion -->
+        <div class="section">
+            <h2>🎯 উপসংহার</h2>
+            
+            <p>
+                আমরা মিথ্যা বলি না। আমরা সত্যি কথা বলি। "লোকাল-ফার্স্ট" মানে নয় যে কিছুই বাইরে যায় না। "লোকাল-ফার্স্ট" মানে — <strong>আপনি আপনার সিস্টেমের মালিক, এবং আমরা সেই মালিকানাকে সম্মান করি।</strong>
+            </p>
+
+            <p>
+                প্রতিটি সফটওয়্যার, প্রতিটি হার্ডওয়্যার, প্রতিটি অপারেটিং সিস্টেম — সবকিছু বাইরের নির্ভরশীলতা রাখে। কিন্তু আমরা সেই নির্ভরশীলতাকে কমিয়ে আনতে চাই। আমরা চাই — <strong>আপনি কম নির্ভরশীল হোন, বেশি স্বাধীন হোন।</strong>
+            </p>
+
+            <div class="honesty-box">
+                <h4>ZombieCoder এর সত্যিকারের লক্ষ্য:</h4>
+                <p>সম্পূর্ণ লোকাল হওয়া নয় — সম্পূর্ণ <strong>স্বচ্ছ</strong> হওয়া। আমরা চাই আপনি জানুন আপনার ডাটা কোথায় যাচ্ছে, কেন যাচ্ছে, এবং আপনি কীভাবে তা বন্ধ করতে পারেন।</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="brand">🧟 ZombieCoder</div>
+        <div class="tagline">"সত্যি কথা বলা — এটিই আমাদের প্রথম ধাপ।"</div>
+        <div class="copyright">
+            <p>তৈরি করেছেন সাহন স্রাবন — ঢাকা, বাংলাদেশ</p>
+            <p>Developer Zone | Smart Learning Platform BD</p>
+            <p style="margin-top: 15px; color: #64748b;">© 2026 ZombieCoder। সত্যিকারের স্বচ্ছতা।</p>
+        </div>
+    </footer>
+</body>
+</html>
