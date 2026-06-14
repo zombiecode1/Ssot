@@ -86,3 +86,9 @@ src/LangChainAgent/dist/
 src/LangChainAgent/node_modules/
 src/LangChainAgent/*.db
 src/LangChainAgent/.zombiecoder/
+
+# ─── Large Binary Files ─────────────────────────────────────────────────────
+embedding/
+*.exe
+*.gguf
+*.safetensors
