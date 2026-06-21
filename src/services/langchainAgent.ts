@@ -15,6 +15,7 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { callMcpTool } from '../mcp/client';
 import { RAGModule } from './ragModule';
+import { fetchAvailableModels, resolveModel } from '../LangChainAgent/agent.config';
 
 // Dynamic imports for langgraph (subpath exports need node16 moduleResolution)
 let createReactAgent: any = null;
@@ -187,12 +188,20 @@ export interface AgentRunResult {
 
 /**
  * Run the LangChain agent with conversation memory, tools, and RAG context.
+ *
+ * Model selection priority:
+ *   1. Frontend-provided 'model' field (user override) — validated against server list
+ *   2. Default: deepseek-v4-flash-free (fast, available on proxi-bridge)
+ * The full model list is fetched from http://localhost:9999/v1/models at startup.
  */
 export async function runLangChainAgent(params: AgentRunParams): Promise<AgentRunResult> {
   const { messages, sessionId, systemPrompt, modelName, directory } = params;
 
   // Load LangGraph dynamically
   await loadLangGraph();
+
+  // Ensure available models are cached (best-effort, non-blocking)
+  fetchAvailableModels().catch(() => {});
 
   // Get or create memory checkpoint for this session
   const memory = getMemory(sessionId);
@@ -227,9 +236,13 @@ export async function runLangChainAgent(params: AgentRunParams): Promise<AgentRu
     ? `${basePrompt}\n\n--- Project Context ---\n${ragContext}\n--- End Project Context ---`
     : basePrompt;
 
+  // Resolve model: user-selected (from frontend) → default (deepseek-v4-flash-free)
+  // Models are validated against the server's /v1/models list
+  const resolvedModel = resolveModel(modelName, 'deepseek-v4-flash-free');
+
   // Create LLM pointing to our proxi-bridge
   const llm = new ChatOpenAI({
-    modelName: modelName || 'llama-3.3-70b-versatile',
+    modelName: resolvedModel,
     temperature: 0.7,
     maxTokens: 4096,
     configuration: {
@@ -279,7 +292,7 @@ export async function runLangChainAgent(params: AgentRunParams): Promise<AgentRu
 
   return {
     response,
-    model: modelName || 'llama-3.3-70b-versatile',
+    model: resolvedModel,
     toolCalls,
     conversationId: sessionId,
   };

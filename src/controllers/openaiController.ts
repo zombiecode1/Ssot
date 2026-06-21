@@ -95,7 +95,7 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
       });
 
       if (isStream) {
-        // Gateway returns non-streaming result; stream it to client
+        // Use streaming provider gateway
         res.writeHead(200, {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
@@ -103,30 +103,84 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
           'X-Accel-Buffering': 'no',
         });
 
-        const completion = gwResult as any;
-        const choice = completion.choices?.[0];
-        if (choice) {
-          const chunk = {
-            id: completion.id || `chatcmpl-${Date.now()}`,
-            object: 'chat.completion.chunk',
-            created: completion.created || Math.floor(Date.now() / 1000),
-            model: completion.model || params.model || 'unknown',
-            choices: [{
-              index: 0,
-              delta: { role: 'assistant', content: choice.message?.content || '' },
-              finish_reason: choice.finish_reason || 'stop',
-            }],
-          };
-          res.write(`data: ${JSON.stringify(chunk)}\n\n`);
-        }
+        let prefixApplied = false;
+        const applyPrefixToChunk = (chunkData: any) => {
+          if (prefixApplied) return chunkData;
+          if (chunkData.choices && Array.isArray(chunkData.choices)) {
+            for (const choice of chunkData.choices) {
+              const delta = choice.delta || choice.message;
+              if (delta && typeof delta.content === 'string' && delta.content) {
+                delta.content = ResponseNormalizer.applyPersonaPrefix(delta.content);
+                prefixApplied = true;
+                break;
+              }
+            }
+          }
+          return chunkData;
+        };
 
-        res.write('data: [DONE]\n\n');
-        res.end();
+        try {
+          const stream = providerGateway.chatStream({
+            model: params.model || 'auto',
+            messages: params.messages.map(m => ({
+              role: m.role as any,
+              content: String(m.content || ''),
+              tool_calls: (m as any).tool_calls,
+              tool_call_id: (m as any).tool_call_id,
+              name: (m as any).name,
+            })),
+            max_tokens: params.max_tokens ?? undefined,
+            temperature: params.temperature ?? undefined,
+            tools: params.tools as any,
+            stream: true,
+          });
+
+          for await (const chunk of stream) {
+            const sseChunk = {
+              id: chunk.id || `chatcmpl-${Date.now()}`,
+              object: 'chat.completion.chunk',
+              created: chunk.created || Math.floor(Date.now() / 1000),
+              model: chunk.model || params.model || 'unknown',
+              choices: chunk.choices?.map((c: any) => ({
+                index: c.index || 0,
+                delta: c.delta || c.message || { content: c.text || '' },
+                finish_reason: c.finish_reason || null,
+              })) || [],
+            };
+            applyPrefixToChunk(sseChunk);
+            res.write(`data: ${JSON.stringify(sseChunk)}\n\n`);
+          }
+
+          res.write('data: [DONE]\n\n');
+          res.end();
+        } catch (streamErr: any) {
+          // Streaming failed - try non-streaming fallback
+          console.warn('Streaming failed, falling back to non-streaming:', streamErr?.message);
+          const completion = gwResult as any;
+          const choice = completion.choices?.[0];
+          if (choice) {
+            const content = choice.message?.content || '';
+            const chunk = {
+              id: completion.id || `chatcmpl-${Date.now()}`,
+              object: 'chat.completion.chunk',
+              created: completion.created || Math.floor(Date.now() / 1000),
+              model: completion.model || params.model || 'unknown',
+              choices: [{
+                index: 0,
+                delta: { role: 'assistant', content: ResponseNormalizer.applyPersonaPrefix(content) },
+                finish_reason: choice.finish_reason || 'stop',
+              }],
+            };
+            res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+          }
+          res.write('data: [DONE]\n\n');
+          res.end();
+        }
 
         groqService.addLog({
           method: 'POST',
           path: '/v1/chat/completions',
-          model: gwResult.model || params.model || 'auto',
+          model: params.model || 'auto',
           status: 200,
           duration_ms: Date.now() - startTime,
           tokens: gwResult.usage?.total_tokens || 0,
@@ -144,12 +198,16 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
         for (const c of normalized.choices) {
           if (typeof c.message?.content === 'string') {
             c.message.content = ResponseNormalizer.stripThinkBlocks(c.message.content);
+            // Enforce persona prefix on every output
+            c.message.content = ResponseNormalizer.applyPersonaPrefix(c.message.content);
           }
           // Handle reasoning-only models (e.g., MiMo) that put response in reasoning_content
           const content = c.message?.content;
           if ((content === null || content === undefined || content === '') && c.message?.reasoning_content) {
             c.message.content = c.message.reasoning_content;
             delete c.message.reasoning_content;
+            // Enforce persona prefix on reasoning_content fallback too
+            c.message.content = ResponseNormalizer.applyPersonaPrefix(c.message.content);
           }
         }
       }
@@ -183,11 +241,27 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
         'X-Accel-Buffering': 'no',
       });
 
-      // Track chunk metadata for normalization
+      // Track chunk metadata for normalization + persona prefix tracking
       let chunkId: string | null = null;
       let chunkCreated: number | null = null;
       let chunkModel: string | null = null;
+      let prefixApplied = false;
       const baseTimestamp = Math.floor(Date.now() / 1000);
+
+      const applyPrefixToChunk = (chunkData: any) => {
+        if (prefixApplied) return chunkData;
+        if (chunkData.choices && Array.isArray(chunkData.choices)) {
+          for (const choice of chunkData.choices) {
+            const delta = choice.delta || choice.message;
+            if (delta && typeof delta.content === 'string' && delta.content) {
+              delta.content = ResponseNormalizer.applyPersonaPrefix(delta.content);
+              prefixApplied = true;
+              break;
+            }
+          }
+        }
+        return chunkData;
+      };
 
       // Handle the stream - it could be parsed chunks or raw SSE
       if (stream && typeof stream[Symbol.asyncIterator] === 'function') {
@@ -210,6 +284,8 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
             choices: Array.isArray(chunkData.choices) ? chunkData.choices : [],
           };
 
+          // Enforce persona prefix on first content chunk
+          applyPrefixToChunk(normalizedChunk);
           res.write(`data: ${JSON.stringify(normalizedChunk)}\n\n`);
         }
       } else if (stream && typeof stream.getReader === 'function') {
@@ -253,6 +329,8 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
                   choices: Array.isArray(chunkData.choices) ? chunkData.choices : [],
                 };
 
+                // Enforce persona prefix on first content chunk
+                applyPrefixToChunk(normalizedChunk);
                 res.write(`data: ${JSON.stringify(normalizedChunk)}\n\n`);
               }
             }
@@ -284,12 +362,16 @@ export const handleChatCompletion = async (req: Request, res: Response) => {
         for (const c of normalized.choices) {
           if (typeof c.message?.content === 'string') {
             c.message.content = ResponseNormalizer.stripThinkBlocks(c.message.content);
+            // Enforce persona prefix on every output
+            c.message.content = ResponseNormalizer.applyPersonaPrefix(c.message.content);
           }
           // Handle reasoning-only models (e.g., MiMo) that put response in reasoning_content
           const content = c.message?.content;
           if ((content === null || content === undefined || content === '') && c.message?.reasoning_content) {
             c.message.content = c.message.reasoning_content;
             delete c.message.reasoning_content;
+            // Enforce persona prefix on reasoning_content fallback too
+            c.message.content = ResponseNormalizer.applyPersonaPrefix(c.message.content);
           }
         }
       }
@@ -403,12 +485,20 @@ export const handleTextCompletion = async (req: Request, res: Response) => {
       let chunkId: string | null = null;
       let chunkCreated: number | null = null;
       let chunkModel: string | null = null;
+      let prefixApplied = false;
 
       for await (const chunk of groqStream as any) {
         // Update tracked metadata from current chunk if available
         if (chunk.id) chunkId = chunk.id;
         if (chunk.created) chunkCreated = chunk.created;
         if (chunk.model) chunkModel = chunk.model;
+
+        let text = chunk.choices?.[0]?.delta?.content || chunk.choices?.[0]?.text || '';
+        // Enforce persona prefix on first content chunk
+        if (!prefixApplied && text) {
+          text = ResponseNormalizer.applyPersonaPrefix(text);
+          prefixApplied = true;
+        }
 
         const textChunk = {
           id: chunk.id || chunkId || `textcmpl-${Date.now()}`,
@@ -417,7 +507,7 @@ export const handleTextCompletion = async (req: Request, res: Response) => {
           model: chunk.model || chunkModel || chatParams.model || 'unknown',
           choices: [{
             index: 0,
-            text: chunk.choices?.[0]?.delta?.content || chunk.choices?.[0]?.text || '',
+            text,
             finish_reason: chunk.choices?.[0]?.finish_reason || null,
             logprobs: null,
           }],
@@ -429,6 +519,9 @@ export const handleTextCompletion = async (req: Request, res: Response) => {
     } else {
       const completion = await groqService.createChatCompletion(chatParams);
       const data = completion as any;
+      let text = data.choices[0]?.message?.content || '';
+      // Enforce persona prefix
+      text = ResponseNormalizer.applyPersonaPrefix(text);
       const textResponse = {
         id: data.id,
         object: 'text_completion',
@@ -436,7 +529,7 @@ export const handleTextCompletion = async (req: Request, res: Response) => {
         model: data.model,
         choices: [{
           index: 0,
-          text: data.choices[0]?.message?.content || '',
+          text,
           finish_reason: data.choices[0]?.finish_reason || 'stop',
           logprobs: null,
         }],

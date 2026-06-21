@@ -5,7 +5,7 @@
 
 import { BaseProvider } from '../base.provider';
 import { ChatCompletionParams, ProviderCapabilities, ProviderConfig } from '../types';
-import { normalizeOpenAiResponse, parseSseStream } from '../normalizer';
+import { normalizeOpenAiStreamChunk, parseSseStream } from '../normalizer';
 
 export class GroqProvider extends BaseProvider {
   readonly id = 'groq';
@@ -82,7 +82,7 @@ export class GroqProvider extends BaseProvider {
       throw new Error('[groq] No response body for stream');
     }
 
-    yield* parseSseStream(resp.body, params.model, normalizeOpenAiResponse as any);
+    yield* parseSseStream(resp.body, params.model, normalizeOpenAiStreamChunk as any);
   }
 
   protected async fetchModelsFromApi(): Promise<any[]> {

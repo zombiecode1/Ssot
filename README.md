@@ -76,9 +76,9 @@ npm install
 
 # Build
 npm run build
-
-# Start server
 npm start
+# Start server
+
 ```
 
 That's it! Now open `http://localhost:9999` and talk to ZombieCoder.

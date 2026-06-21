@@ -2,17 +2,22 @@ import { GroqService } from './groqService';
 import { DiskRAGService } from './ragService';
 import { getIdentity } from './identityService';
 import { AgentResponse, AgentFlags } from '../types';
+import { IntegrityGate, getIntegrityGate } from './integrityGate';
 
 interface AgentConfig {
   autoRag: boolean;
   maxRagChunks: number;
   defaultModel: string;
+  integrityGateEnabled: boolean;
+  blockOnIntegrityViolation: boolean;
 }
 
 const DEFAULT_CONFIG: AgentConfig = {
   autoRag: true,
   maxRagChunks: 5,
   defaultModel: 'deepseek-v4-flash-free',
+  integrityGateEnabled: true,
+  blockOnIntegrityViolation: true,
 };
 
 // NOTE: This service implements the legacy "AgentResponse" JSON wrapper format used by the
@@ -131,7 +136,36 @@ export class AgentService {
       });
 
       const rawContent = (completion as any).choices?.[0]?.message?.content || '';
-      const { content, flags } = this.parseResponse(rawContent);
+      let { content, flags } = this.parseResponse(rawContent);
+
+      // ─── Integrity Gate Check ─────────────────────────────────
+      if (this.config.integrityGateEnabled) {
+        const gate = getIntegrityGate();
+        const lastQuery = userMessages[userMessages.length - 1]?.content || '';
+        const result = gate.validate(content, {
+          query: lastQuery,
+          hasProjectContext: !!ragContext,
+          hasSearched: false,
+          knowledgeCutoff: 'mid-2025',
+        });
+
+        if (result.blocked) {
+          console.warn(
+            `[IntegrityGate] Blocked model response (${result.violations.length} violations): ${content.substring(0, 100)}...`,
+          );
+          if (result.alternativeResponse) {
+            content = result.alternativeResponse;
+            flags = { type: 'chat', safety: 'safe' };
+          } else {
+            content = 'ভাইয়া, আমি এই উত্তরটি দিতে পারছি না কারণ এটি আমার পার্সোনা নিয়ম লঙ্ঘন করে। দয়া করে আরও নির্দিষ্ট করে বলুন।';
+            flags = { type: 'chat', safety: 'safe' };
+          }
+        } else if (result.violations.length > 0) {
+          console.warn(
+            `[IntegrityGate] ${result.violations.length} minor violation(s) — response allowed but logged`,
+          );
+        }
+      }
 
       this.lastResponse = {
         content,

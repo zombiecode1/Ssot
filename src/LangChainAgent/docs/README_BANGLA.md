@@ -190,7 +190,7 @@ ZombieCoder এর একটি **অপরিবর্তনীয় পরি
 - **মালিক:** Sahon Srabon
 - **প্রতিষ্ঠান:** Developer Zone
 - **ঠিকানা:** ঢাকা, বাংলাদেশ
-- **যোগাযোগ:** infi@smartearningplatformbd.net
+- **যোগাযোগ:** infi@zombiecoder.my.id
 
 এই পরিচয় কোনোভাবেই পরিবর্তন করা যায় না। এটি একটি ডিজিটাল সিলের মতো কাজ করে।
 
@@ -252,9 +252,9 @@ ZombieCoder এর দুটি ইঞ্জিন আছে:
 
 ## 📞 সাহায্য প্রয়োজন হলে
 
-- **ইমেইল:** infi@smartearningplatformbd.net
+- **ইমেইল:** infi@zombiecoder.my.id
 - **ফোন:** +880 1323-626282
-- **ওয়েবসাইট:** https://smartearningplatformbd.net/
+- **ওয়েবসাইট:** https://zombiecoder.my.id/
 - **ঠিকানা:** ২৩৫ সাউথ পীরারবাগ, আমতলা বাজার, মিরপুর - ৬০ ফিট, ঢাকা
 
 ---

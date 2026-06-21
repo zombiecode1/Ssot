@@ -409,7 +409,7 @@ curl http://localhost:11434/v1/models
 ## Support
 
 For technical support:
-- **Email:** infi@smartearningplatformbd.net
+- **Email:** infi@zombiecoder.my.id
 - **GitHub Issues:** https://github.com/zombiecoder/langchain-agent/issues
 
 ---

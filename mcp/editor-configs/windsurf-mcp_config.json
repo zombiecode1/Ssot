@@ -1,12 +1,19 @@
 {
-  "_comment": "Windsurf MCP Configuration for ZombieCoder",
-  
+  "_comment": "Windsurf MCP Configuration for ZombieCoder — Global Setup",
+  "_usage": "Copy to ~/.codeium/windsurf/mcp_config.json (global) or .windsurf/mcp_config.json (project-level). Auto-detects workspaceFolder.",
+
   "mcpServers": {
+    "zombiecoder-http": {
+      "type": "http",
+      "url": "http://localhost:9999/mcp",
+      "_description": "Connect to running ZombieCoder Proxi Bridge (port 9999) — auto-detects working dir, tools, RAG"
+    },
     "zombiecoder-stdio": {
       "command": "node",
       "args": ["dist/mcp/server-entry.js"],
       "cwd": "${workspaceFolder}",
-      "_description": "Spawn MCP server directly (standalone)"
+      "env": { "WORKSPACE_DIR": "${workspaceFolder}", "ZOMBIECODER_MCP": "1" },
+      "_description": "Spawn MCP server directly (standalone mode)"
     }
   }
 }

@@ -4,7 +4,7 @@
 
 import { BaseProvider } from '../base.provider';
 import { ChatCompletionParams, ProviderCapabilities, ProviderConfig } from '../types';
-import { normalizeOpenAiResponse, parseSseStream } from '../normalizer';
+import { normalizeOpenAiStreamChunk, parseSseStream } from '../normalizer';
 
 export class OpenCodeProvider extends BaseProvider {
   readonly id = 'opencode';
@@ -87,7 +87,7 @@ export class OpenCodeProvider extends BaseProvider {
       throw new Error('[opencode] No response body for stream');
     }
 
-    yield* parseSseStream(resp.body, params.model, normalizeOpenAiResponse as any);
+    yield* parseSseStream(resp.body, params.model, normalizeOpenAiStreamChunk as any);
   }
 
   protected async fetchModelsFromApi(): Promise<any[]> {

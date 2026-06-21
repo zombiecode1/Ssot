@@ -4,7 +4,7 @@
 
 import { BaseProvider } from '../base.provider';
 import { ChatCompletionParams, ProviderCapabilities, ProviderConfig } from '../types';
-import { normalizeOpenAiResponse, parseSseStream } from '../normalizer';
+import { normalizeOpenAiStreamChunk, parseSseStream } from '../normalizer';
 
 export class GeminiProvider extends BaseProvider {
   readonly id = 'gemini';
@@ -89,7 +89,7 @@ export class GeminiProvider extends BaseProvider {
       throw new Error('[gemini] No response body for stream');
     }
 
-    yield* parseSseStream(resp.body, params.model, normalizeOpenAiResponse as any);
+    yield* parseSseStream(resp.body, params.model, normalizeOpenAiStreamChunk as any);
   }
 
   protected async fetchModelsFromApi(): Promise<any[]> {

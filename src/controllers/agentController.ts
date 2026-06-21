@@ -367,10 +367,24 @@ function generateSessionTitle(message: string): string {
 
 export const handleAgentChat = async (req: Request, res: Response) => {
   try {
-    const { messages, model, directory, category, legacy, user_id, workspace_id, conversation_id } = req.body || {};
+    const { messages, model, category, legacy, user_id, workspace_id, conversation_id, directory: reqDir } = req.body || {};
+    let directory = reqDir;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: { message: 'messages array is required', type: 'invalid_request_error' } });
+    }
+
+    // ─── Auto-detect working directory from active MCP clients ──────────
+    if (!directory) {
+      try {
+        const detectedDir = findRootDirectory();
+        if (detectedDir && fs.existsSync(detectedDir)) {
+          directory = detectedDir;
+          console.log(`[Agent] Auto-detected working directory from active MCP client: ${directory}`);
+        }
+      } catch (e: any) {
+        console.warn('[Agent] Auto-detect working directory failed:', e?.message);
+      }
     }
 
     if (directory) {
@@ -439,6 +453,10 @@ export const handleAgentChat = async (req: Request, res: Response) => {
         selectedModel = route.model;
       }
       const result = await agentService.processMessage(messages, selectedModel);
+      // Enforce persona prefix on legacy mode response
+      if (result?.content && typeof result.content === 'string') {
+        result.content = ResponseNormalizer.applyPersonaPrefix(result.content);
+      }
       return res.json(result);
     }
 
@@ -613,6 +631,34 @@ export const handleAgentChat = async (req: Request, res: Response) => {
       let aborted = false;
       req.on('close', () => { aborted = true; });
 
+      // Enforce persona prefix on first content-bearing chunk
+      let prefixApplied = false;
+      const applyPrefixToSseData = (sseData: string): string => {
+        if (prefixApplied) return sseData;
+        if (sseData === '[DONE]') return sseData;
+        try {
+          const parsed = JSON.parse(sseData);
+          if (parsed.choices && Array.isArray(parsed.choices)) {
+            for (const c of parsed.choices) {
+              const delta = c.delta || c.message;
+              if (delta && typeof delta.content === 'string' && delta.content) {
+                delta.content = ResponseNormalizer.applyPersonaPrefix(delta.content);
+                prefixApplied = true;
+                break;
+              }
+            }
+          }
+          return JSON.stringify(parsed);
+        } catch {
+          // Not JSON — likely a raw string chunk
+          if (typeof sseData === 'string' && sseData.trim()) {
+            prefixApplied = true;
+            return ResponseNormalizer.applyPersonaPrefix(sseData);
+          }
+          return sseData;
+        }
+      };
+
       // Stream may be a ReadableStream<Uint8Array> (fetch) or async iterable of strings/objects.
       // We need to decode bytes to string and parse SSE lines.
       const reader = typeof stream?.getReader === 'function' ? stream.getReader() : null;
@@ -631,7 +677,9 @@ export const handleAgentChat = async (req: Request, res: Response) => {
           for (const line of lines) {
             const trimmed = line.trim();
             if (trimmed.startsWith('data: ')) {
-              res.write(`${trimmed}\n\n`);
+              const data = trimmed.slice(6);
+              const prefixed = applyPrefixToSseData(data);
+              res.write(`data: ${prefixed}\n\n`);
             }
           }
         }
@@ -639,7 +687,9 @@ export const handleAgentChat = async (req: Request, res: Response) => {
         if (buffer.trim()) {
           const trimmed = buffer.trim();
           if (trimmed.startsWith('data: ')) {
-            res.write(`${trimmed}\n\n`);
+            const data = trimmed.slice(6);
+            const prefixed = applyPrefixToSseData(data);
+            res.write(`data: ${prefixed}\n\n`);
           }
         }
       } else {
@@ -647,9 +697,19 @@ export const handleAgentChat = async (req: Request, res: Response) => {
         for await (const chunk of stream as any) {
           if (aborted) break;
           if (typeof chunk === 'string') {
-            res.write(`data: ${chunk}\n\n`);
+            res.write(`data: ${applyPrefixToSseData(chunk)}\n\n`);
           } else if (chunk && typeof chunk === 'object') {
-            // Already parsed object
+            // Already parsed object — apply prefix before serializing
+            if (!prefixApplied && chunk.choices && Array.isArray(chunk.choices)) {
+              for (const c of chunk.choices) {
+                const delta = c.delta || c.message;
+                if (delta && typeof delta.content === 'string' && delta.content) {
+                  delta.content = ResponseNormalizer.applyPersonaPrefix(delta.content);
+                  prefixApplied = true;
+                  break;
+                }
+              }
+            }
             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
           }
         }
@@ -667,11 +727,12 @@ export const handleAgentChat = async (req: Request, res: Response) => {
     // This handles differences between Groq, Ollama, Gemini, Anthropic formats.
     const normalized = ResponseNormalizer.normalize(completion, params.model || 'unknown');
 
-    // Strip think blocks from all choices
+    // Strip think blocks from all choices + enforce persona prefix
     if (Array.isArray(normalized.choices)) {
       for (const c of normalized.choices) {
         if (typeof c.message?.content === 'string') {
           c.message.content = ResponseNormalizer.stripThinkBlocks(c.message.content);
+          c.message.content = ResponseNormalizer.applyPersonaPrefix(c.message.content);
         }
       }
     }
@@ -1034,6 +1095,9 @@ export const handleLangChainAgent = async (req: Request, res: Response) => {
 
     console.log(`✅ LangChain agent: tools=[${result.toolCalls.join(', ')}], model=${result.model}`);
 
+    // Enforce persona prefix on LangChain agent response
+    const prefixedResponse = ResponseNormalizer.applyPersonaPrefix(result.response);
+
     // Return OpenAI-compatible response
     res.json({
       id: crypto.randomUUID(),
@@ -1042,7 +1106,7 @@ export const handleLangChainAgent = async (req: Request, res: Response) => {
       model: result.model,
       choices: [{
         index: 0,
-        message: { role: 'assistant', content: result.response },
+        message: { role: 'assistant', content: prefixedResponse },
         finish_reason: 'stop',
       }],
       usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
@@ -1074,11 +1138,72 @@ export const handleMemoryStats = async (req: Request, res: Response) => {
 import {
   registerClient,
   disconnectClient,
+  getClient,
   getAllClients,
   getActiveClients,
   getClientStats,
   findRootDirectory,
 } from '../services/clientTracker';
+
+// ── Helper: Auto-detect working directory from connected clients ──────
+// Every request handler calls this to ensure .zombiecoder/ exists
+// in the correct project folder — the one where the active editor is working.
+async function ensureActiveClientDirectory(clientId?: string): Promise<string | null> {
+  try {
+    let rootDir: string | null = null;
+
+    // Priority 1: Specific client ID from request headers
+    if (clientId) {
+      const client = getClient(clientId);
+      if (client && client.status === 'active') {
+        rootDir = client.rootDirectory;
+      }
+    }
+
+    // Priority 2: Most recently active client
+    if (!rootDir) {
+      rootDir = findRootDirectory();
+    }
+
+    // Priority 3: Fallback to current RAG directory
+    if (!rootDir) {
+      rootDir = ragService?.currentDir || null;
+    }
+
+    if (!rootDir) return null;
+
+    const resolvedDir = path.resolve(rootDir);
+
+    // If already set to this directory, skip
+    if (ragService && ragService.currentDir === resolvedDir && ragService.zombieDirExists()) {
+      return resolvedDir;
+    }
+
+    // Auto-init .zombiecoder/ in the client's project directory
+    if (ragService) {
+      console.log(`📁 Auto-switching to client directory: ${resolvedDir}`);
+      await ragService.setWorkingDirectory(resolvedDir, { autoInit: true });
+      if (ragService.ssotExists()) {
+        console.log(`✅ .zombiecoder ready @ ${resolvedDir}`);
+      } else {
+        // Generate SSOT if it doesn't exist
+        try {
+          const scanResult = await ragService.scanProject();
+          const template = ragService.generateSSOTTemplate(scanResult);
+          ragService.saveSSOT(template);
+          console.log(`✅ SSOT.md generated @ ${resolvedDir}`);
+        } catch (e: any) {
+          console.warn(`⚠️ SSOT generation failed: ${e?.message}`);
+        }
+      }
+    }
+
+    return resolvedDir;
+  } catch (e: any) {
+    console.warn(`⚠️ ensureActiveClientDirectory failed: ${e?.message}`);
+    return ragService?.currentDir || null;
+  }
+}
 
 export const handleRegisterEditor = async (req: Request, res: Response) => {
   const { directory, clientName, source, capabilities } = req.body || {};

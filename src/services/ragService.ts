@@ -226,6 +226,60 @@ export class DiskRAGService {
     return fs.existsSync(path.join(this.workingDir, ZOMBIE_DIR));
   }
 
+  /**
+   * Ensure all required .zombiecoder files exist.
+   * Creates the directory, SSOT.md, runtime.json, and permissions.json if missing.
+   * Returns the list of files that were created.
+   */
+  async ensureZombiecoderFiles(): Promise<string[]> {
+    const created: string[] = [];
+    const zombieDir = path.join(this.workingDir, ZOMBIE_DIR);
+
+    // 1. Create .zombiecoder directory
+    if (!fs.existsSync(zombieDir)) {
+      fs.mkdirSync(zombieDir, { recursive: true });
+      created.push('.zombiecoder/');
+    }
+
+    // 2. Create SSOT.md if missing
+    if (!fs.existsSync(this.ssotPath)) {
+      const scanResult = await this.scanProject();
+      const template = this.generateSSOTTemplate(scanResult);
+      this.saveSSOT(template);
+      created.push('.zombiecoder/SSOT.md');
+    }
+
+    // 3. Create runtime.json if missing
+    const runtimePath = path.join(zombieDir, 'runtime.json');
+    if (!fs.existsSync(runtimePath)) {
+      const runtime = {
+        workspaceRoot: this.workingDir,
+        server: {
+          port: 9999,
+          mcpUrl: 'http://localhost:9999/mcp',
+          sseUrl: 'http://localhost:9999/sse',
+        },
+        editorConfigs: {
+          vscode: 'mcp/editor-configs/vscode-mcp.json',
+          zed: 'mcp/editor-configs/zed-settings.json',
+          windsurf: 'mcp/editor-configs/windsurf-mcp_config.json',
+          jetbrains: 'mcp/editor-configs/jetbrains-mcp.json',
+        },
+        updatedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(runtimePath, JSON.stringify(runtime, null, 2) + '\n', 'utf-8');
+      created.push('.zombiecoder/runtime.json');
+    }
+
+    // 4. Create permissions.json if missing
+    if (!fs.existsSync(this.permPath)) {
+      fs.writeFileSync(this.permPath, JSON.stringify([], null, 2) + '\n', 'utf-8');
+      created.push('.zombiecoder/permissions.json');
+    }
+
+    return created;
+  }
+
   addToSession(message: string): void {
     this.sessionBuffer.push(message);
     if (this.sessionBuffer.length > 20) {

@@ -12,7 +12,7 @@ import {
 } from './agentController';
 import { ensureConversation } from '../services/stateDb';
 import { readRuntimeEvents, recordRuntimeEvent } from '../services/runtimeEventLog';
-import { registerClient, touchClient, disconnectClient } from '../services/clientTracker';
+import { registerClient, touchClient, disconnectClient, updateClientIndex } from '../services/clientTracker';
 
 type JsonRpcRequest = {
   jsonrpc?: string;
@@ -353,11 +353,31 @@ async function handleJsonRpcMethod(body: JsonRpcRequest, sessionIdHeader: string
     });
 
     // ─── Register connected client with directory tracking ──────────────
-    const rootDir = body.params?.rootDirectory
+    // MCP standard: clients send rootUri (file:// URI) in initialize params
+    // JetBrains sends rootUri, VS Code sends workspaceFolder, etc.
+    let rootDir = body.params?.rootDirectory
       || body.params?.workspaceFolder
       || body.params?.directory
       || process.env.WORKSPACE_ROOT
       || process.cwd();
+
+    // Handle rootUri (standard MCP field) — comes as file:// URI
+    const rootUri: string | undefined = body.params?.rootUri;
+    if (rootUri && rootUri.startsWith('file://')) {
+      try {
+        // Decode file:// URI to absolute path
+        const decodedPath = decodeURIComponent(rootUri.slice(7));
+        // Handle Windows paths like /C:/Users/...
+        if (decodedPath.match(/^\/[A-Za-z]:\//)) {
+          rootDir = decodedPath.slice(1); // Remove leading /
+        } else {
+          rootDir = decodedPath;
+        }
+      } catch {
+        // Fallback: use rootUri as-is if parsing fails
+        rootDir = rootUri;
+      }
+    }
 
     const registeredClient = registerClient({
       clientId: sessionId,
@@ -370,6 +390,14 @@ async function handleJsonRpcMethod(body: JsonRpcRequest, sessionIdHeader: string
         : undefined,
     });
     console.log(`🔌 MCP client registered: ${clientInfo?.name || 'unknown'} → ${registeredClient.rootDirectory}`);
+
+    // ─── NO auto-init here — .zombiecoder/ will be created at request time ──────
+    // Why? Because:
+    //   1. MCP initialize happens once when editor connects
+    //   2. But the editor may re-open, switch projects, or server may restart
+    //   3. We check active clients at EVERY request to determine the right directory
+    //   4. So .zombiecoder/ is always created in the correct active project folder
+    // See: ensureActiveClientDirectory() in agentController.ts
 
     recordRuntimeEvent({
       timestamp: new Date().toISOString(),
@@ -464,6 +492,19 @@ async function handleJsonRpcMethod(body: JsonRpcRequest, sessionIdHeader: string
       status: 'ok',
     });
     response.body = rpcResult(id, { resources: buildResources() });
+    return response;
+  }
+
+  if (method === 'prompts/list') {
+    recordRuntimeEvent({
+      timestamp: new Date().toISOString(),
+      category: 'mcp',
+      event: 'prompts_list',
+      sessionId: sessionIdHeader || undefined,
+      method,
+      status: 'ok',
+    });
+    response.body = rpcResult(id, { prompts: [] });
     return response;
   }
 
@@ -948,13 +989,17 @@ async function handleJsonRpcMethod(body: JsonRpcRequest, sessionIdHeader: string
         return response;
       }
       try {
-        const postData = `q=${encodeURIComponent(query)}&kl=wt-wt`;
-        const result = await new Promise<string>((resolve, reject) => {
+        const postData = `q=${encodeURIComponent(query)}`;
+        const html = await new Promise<string>((resolve, reject) => {
           const req = https.request({
             hostname: 'lite.duckduckgo.com',
-            path: '/lite',
+            path: '/lite/',
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) },
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Length': Buffer.byteLength(postData),
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            },
           }, (res: any) => {
             let data = '';
             res.on('data', (chunk: any) => data += chunk);
@@ -964,10 +1009,23 @@ async function handleJsonRpcMethod(body: JsonRpcRequest, sessionIdHeader: string
           req.write(postData);
           req.end();
         });
-        // Parse simple results from DuckDuckGo lite HTML
-        const titleMatches = result.match(/<a[^>]*class="result-link"[^>]*>([^<]+)<\/a>/g) || [];
-        const titles = titleMatches.map((m: string) => m.replace(/<[^>]+>/g, '').trim()).slice(0, numResults);
-        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, query, results: titles }, null, 2) }] });
+        // Parse DuckDuckGo Lite HTML
+        const linkRe = /<a[^>]*rel="nofollow"[^>]*href="([^"]*)"[^>]*class='result-link'[^>]*>([^<]*)<\/a>/gi;
+        const snippetRe = /<td[^>]*class='result-snippet'[^>]*>([\s\S]*?)<\/td>/gi;
+        const links: Array<{url: string; title: string}> = [];
+        let m;
+        while ((m = linkRe.exec(html)) !== null && links.length < numResults) {
+          const url = m[1];
+          const title = m[2].trim().replace(/&amp;/g, '&');
+          if (url && title && !url.includes('duckduckgo.com')) links.push({ url, title });
+        }
+        const snippets: string[] = [];
+        while ((m = snippetRe.exec(html)) !== null && snippets.length < numResults) {
+          const snippet = m[1].replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim();
+          if (snippet.length > 5) snippets.push(snippet);
+        }
+        const results = links.map((l, i) => ({ title: l.title, url: l.url, snippet: snippets[i] || '' }));
+        response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: true, query, results_count: results.length, results }, null, 2) }] });
         return response;
       } catch (err: any) {
         response.body = rpcResult(id, { content: [{ type: 'text', text: JSON.stringify({ success: false, error: err.message }) }] });

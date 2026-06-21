@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "tsc && cp -f src/LangChainAgent/identity.json dist/LangChainAgent/ 2>/dev/null; true",
+    "build": "tsc && cpx \"src/LangChainAgent/identity.json\" dist/LangChainAgent/",
     "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/index.ts",
     "test": "ts-node test/api-test.ts",
     "report": "ts-node test/generate-model-report.ts",
@@ -40,6 +40,7 @@
     "@types/http-proxy-middleware": "^1.0.0",
     "@types/node": "^20.10.0",
     "@types/node-fetch": "^2.6.4",
+    "cpx": "^1.5.0",
     "node-fetch": "^2.7.0",
     "nodemon": "^3.0.2",
     "ts-node": "^10.9.2",

@@ -14,8 +14,8 @@ This module operates under the **ZombieCoder** identity:
 
 - **Owner:** Sahon Srabon (Developer Zone)
 - **Location:** Dhaka, Bangladesh
-- **Contact:** infi@smartearningplatformbd.net
-- **Website:** https://smartearningplatformbd.net/
+- **Contact:** infi@zombiecoder.my.id
+- **Website:** https://zombiecoder.my.id/
 
 ---
 
@@ -269,9 +269,9 @@ This module implements a **System Sovereignty Protocol**:
 
 ## 🤝 Support
 
-- **Email:** infi@smartearningplatformbd.net
+- **Email:** infi@zombiecoder.my.id
 - **Phone:** +880 1323-626282
-- **Website:** https://smartearningplatformbd.net/
+- **Website:** https://zombiecoder.my.id/
 - **Address:** 235 South Pirarbag, Amtala Bazar, Mirpur - 60 feet, Dhaka, Bangladesh
 
 ---

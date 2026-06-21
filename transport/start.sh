@@ -159,7 +159,7 @@ case "${1:-start}" in
     echo -e "${BLUE}URLs:${NC}"
     echo -e "  Dashboard: ${GREEN}http://localhost:3333${NC}"
     echo -e "  API:       ${GREEN}http://localhost:9999${NC}"
-    echo -e "  Tunnel:    ${GREEN}https://g.smartearningplatformbd.net${NC}"
+    echo -e "  Tunnel:    ${GREEN}https://g.zombiecoder.my.id${NC}"
     echo ""
     ;;
     

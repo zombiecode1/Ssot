@@ -1,24 +1,55 @@
 {
-  "_comment": "VS Code MCP Configuration for ZombieCoder",
-  "_usage_http": "Requires running server: node dist/index.js (port 9999)",
-  "_usage_stdio": "Spawns MCP server as child process (no server needed)",
-  
+  "_comment": "VS Code MCP Configuration for ZombieCoder — Global Setup",
+  "_usage_http": "Copy servers block to your VS Code settings.json under mcp.servers OR use .vscode/mcp.json (mcpServers format below). Requires running bridge: node dist/index.js (port 9999)",
+  "_usage_stdio": "Spawns MCP server as child process (standalone, no bridge needed). Use when bridge is not running.",
+  "_global_paths": {
+    "vscode_settings": "%APPDATA%/Code/User/settings.json (add under mcp.servers)",
+    "vscode_mcp_json": ".vscode/mcp.json (project-level, uses mcpServers format)",
+    "continue_dev": "%APPDATA%/Continue/config.json",
+    "github_copilot": "%APPDATA%/GitHub Copilot/latest.json"
+  },
+
   "mcp": {
     "servers": {
       "zombiecoder-http": {
         "type": "http",
         "url": "http://localhost:9999/mcp",
-        "_description": "Connect to running ZombieCoder server"
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "_description": "Connect to running ZombieCoder Proxi Bridge (port 9999) — auto-discovers tools, RAG, identity, SSOT"
       },
       "zombiecoder-stdio": {
         "command": "node",
         "args": ["dist/mcp/server-entry.js"],
         "cwd": "${workspaceFolder}",
         "env": {
-          "WORKSPACE_DIR": "${workspaceFolder}"
+          "WORKSPACE_DIR": "${workspaceFolder}",
+          "ZOMBIECODER_MCP": "1"
         },
-        "_description": "Spawn MCP server directly (standalone)"
+        "_description": "Spawn MCP server directly (standalone mode, no bridge needed)"
       }
+    }
+  },
+
+  "mcpServers": {
+    "zombiecoder-http": {
+      "type": "http",
+      "url": "http://localhost:9999/mcp",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "_description": "Connect to running ZombieCoder Proxi Bridge (port 9999)"
+    },
+    "zombiecoder-stdio": {
+      "command": "node",
+      "args": ["dist/mcp/server-entry.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "WORKSPACE_DIR": "${workspaceFolder}",
+        "ZOMBIECODER_MCP": "1"
+      },
+      "_description": "Spawn MCP server directly (standalone mode)"
     }
   }
 }

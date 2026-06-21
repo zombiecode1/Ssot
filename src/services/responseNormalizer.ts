@@ -379,6 +379,63 @@ export class ResponseNormalizer {
   }
 
   /**
+   * Enforce the "ভাইয়া," persona prefix on every assistant response.
+   * This ensures the agent identity is visible at ALL output endpoints:
+   *   - /v1/chat/completions
+   *   - /v1/agent/chat
+   *   - /v1/agent/langchain
+   *   - /zombie/chat
+   *   - All streaming responses
+   *
+   * Rules:
+   *   1. If text already starts with "ভাইয়া," or "ভাইয়া," → leave unchanged
+   *   2. If text is empty or whitespace only → leave unchanged
+   *   3. Otherwise prepend "ভাইয়া, " before the first non-whitespace character
+   */
+  static applyPersonaPrefix(text: string): string {
+    if (!text || !text.trim()) return text;
+    const trimmed = text.trimStart();
+    // Already has the prefix (both spellings)
+    if (/^ভাইয়া[ঃ,]|^ভাইয়া[ঃ,]/.test(trimmed)) return text;
+    // Prepend "ভাইয়া, " while preserving leading whitespace
+    const leading = text.substring(0, text.length - trimmed.length);
+    return leading + "ভাইয়া, " + trimmed;
+  }
+
+  /**
+   * Apply persona prefix to the FIRST content delta in a streaming SSE chunk.
+   * Returns the modified chunk data. Tracks state via a WeakMap.
+   */
+  private static _prefixApplied = new WeakMap<object, boolean>();
+
+  static applyPrefixToStreamChunk(chunkData: object, firstChunk: boolean): object {
+    if (!chunkData || typeof chunkData !== 'object') return chunkData;
+    const chunk = chunkData as any;
+    
+    // Only apply to the very first chunk that has content
+    if (!firstChunk && this._prefixApplied.get(chunkData)) return chunkData;
+    
+    if (chunk.choices && Array.isArray(chunk.choices)) {
+      for (const choice of chunk.choices) {
+        const delta = choice.delta || choice.message;
+        if (delta && typeof delta.content === 'string' && delta.content) {
+          delta.content = this.applyPersonaPrefix(delta.content);
+          this._prefixApplied.set(chunkData, true);
+          break; // only first choice
+        }
+      }
+    }
+    return chunkData;
+  }
+
+  /**
+   * Reset the streaming prefix tracker (call at the start of each stream).
+   */
+  static resetStreamPrefix(): void {
+    // WeakMap auto-clears, nothing to do
+  }
+
+  /**
    * Get a human-readable provider name for logging.
    */
   static providerLabel(provider: ProviderType): string {

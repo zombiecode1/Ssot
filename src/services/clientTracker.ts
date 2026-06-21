@@ -26,6 +26,8 @@ const clients = new Map<string, ConnectedClient>();
 const DB_PATH = path.join(process.cwd(), '.zombiecoder', 'connected-clients.json');
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 const DISCONNECT_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
+const CLEANUP_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours — remove disconnected clients older than this
+const MAX_CLIENTS_PER_DIR = 5; // Max clients per directory (prevent accumulation)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Persistence — save/load connected clients to disk
@@ -52,12 +54,22 @@ function loadClients(): void {
   try {
     if (fs.existsSync(DB_PATH)) {
       const raw = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8')) as ClientTrackerDb;
+      const now = Date.now();
+      let loaded = 0;
+      let pruned = 0;
       for (const [key, value] of Object.entries(raw.clients || {})) {
         // On restart, mark all as disconnected
         value.status = 'disconnected';
+        // Remove clients older than CLEANUP_AGE_MS
+        const age = now - (value.lastActiveAt || 0);
+        if (age > CLEANUP_AGE_MS) {
+          pruned++;
+          continue; // skip old clients
+        }
         clients.set(key, value);
+        loaded++;
       }
-      console.log(`👥 Loaded ${clients.size} known clients from tracker`);
+      console.log(`👥 Loaded ${loaded} known clients from tracker (pruned ${pruned} old)`);
     }
   } catch (err: any) {
     console.warn('⚠️ Failed to load client tracker:', err?.message);
@@ -120,10 +132,31 @@ export function registerClient(opts: {
   const existing = clients.get(opts.clientId);
   const now = Date.now();
 
+  // Limit clients per directory — remove oldest disconnected ones first
+  const resolvedDir = path.resolve(opts.rootDirectory);
+  const dirClients = Array.from(clients.values())
+    .filter(c => c.rootDirectory === resolvedDir && c.clientId !== opts.clientId)
+    .sort((a, b) => a.lastActiveAt - b.lastActiveAt);
+
+  if (dirClients.length >= MAX_CLIENTS_PER_DIR) {
+    // Remove oldest disconnected clients first
+    const disconnected = dirClients.filter(c => c.status === 'disconnected');
+    for (let i = 0; i < disconnected.length && dirClients.length >= MAX_CLIENTS_PER_DIR; i++) {
+      clients.delete(disconnected[i].clientId);
+      dirClients.shift();
+    }
+    // If still over limit, remove oldest idle
+    const idle = dirClients.filter(c => c.status === 'idle');
+    for (let i = 0; i < idle.length && dirClients.length >= MAX_CLIENTS_PER_DIR; i++) {
+      clients.delete(idle[i].clientId);
+      dirClients.shift();
+    }
+  }
+
   const client: ConnectedClient = {
     clientId: opts.clientId,
     editorType,
-    rootDirectory: path.resolve(opts.rootDirectory),
+    rootDirectory: resolvedDir,
     connectedAt: existing?.connectedAt || now,
     lastActiveAt: now,
     status: 'active',
@@ -275,6 +308,12 @@ export function startClientTracker(): void {
       } else if (client.status === 'idle' && idleTime > DISCONNECT_TIMEOUT_MS) {
         client.status = 'disconnected';
         clients.set(id, client);
+        changed = true;
+      }
+
+      // Remove disconnected clients older than 24 hours
+      if (client.status === 'disconnected' && idleTime > CLEANUP_AGE_MS) {
+        clients.delete(id);
         changed = true;
       }
     }

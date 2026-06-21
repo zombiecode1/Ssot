@@ -8,6 +8,7 @@
 
 import { Request, Response } from 'express';
 import { logAgentActivity, getAgentStats, getAgentActivity, getAgentActivitySummary } from '../services/agentMemoryDb';
+import { ResponseNormalizer } from '../services/responseNormalizer';
 
 const PROXI_SERVER = process.env.PROXI_BRIDGE_URL || 'http://localhost:9999';
 
@@ -92,7 +93,9 @@ export const handleZombieAgentChat = async (req: Request, res: Response) => {
     }
 
     const data = await response.json() as any;
-    const content = data.choices?.[0]?.message?.content || '';
+    let content = data.choices?.[0]?.message?.content || '';
+    // Enforce persona prefix on zombie agent responses too
+    content = ResponseNormalizer.applyPersonaPrefix(content);
     const durationMs = Date.now() - startTime;
 
     // Log success to database

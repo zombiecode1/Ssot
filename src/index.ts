@@ -1,22 +1,29 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import routes from './routes/index';
-import { authenticate } from './middleware/authMiddleware';
-import { loggingMiddleware } from './middleware/loggingMiddleware';
-import { initializeService, getService } from './controllers/openaiController';
-import { cleanupOldLogs } from './services/fileLogger';
-import identityMiddleware from './middleware/identityMiddleware';
-import { loadIdentity } from './services/identityService';
-import { initializeAgentSystem, getAgentService, getRagService } from './controllers/agentController';
-import { savePersonaToDb } from './services/identityService';
-import { DiskRAGService } from './services/ragService';
-import { startWorkspaceWatcher } from './services/workspaceWatcher';
-import { bootstrapProviders } from './services/providerBootstrap';
-import { connectMcpServer, disconnectMcpServer } from './mcp/client';
-import { startClientTracker, stopClientTracker } from './services/clientTracker';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import fs from "fs";
+import path from "path";
+import routes from "./routes/index";
+import { authenticate } from "./middleware/authMiddleware";
+import { loggingMiddleware } from "./middleware/loggingMiddleware";
+import { initializeService, getService } from "./controllers/openaiController";
+import { cleanupOldLogs } from "./services/fileLogger";
+import identityMiddleware from "./middleware/identityMiddleware";
+import { loadIdentity } from "./services/identityService";
+import {
+  initializeAgentSystem,
+  getAgentService,
+  getRagService,
+} from "./controllers/agentController";
+import { savePersonaToDb } from "./services/identityService";
+import { DiskRAGService } from "./services/ragService";
+import { startWorkspaceWatcher } from "./services/workspaceWatcher";
+import { bootstrapProviders } from "./services/providerBootstrap";
+import { connectMcpServer, disconnectMcpServer } from "./mcp/client";
+import {
+  startClientTracker,
+  stopClientTracker,
+} from "./services/clientTracker";
 
 dotenv.config();
 
@@ -28,47 +35,57 @@ let MCP_CONFIG_DIR: string | null = null;
 // ═══════════════════════════════════════════════════════════════════════════════
 interface DirectoryIndex {
   directory: string;
-  flag: number;        // 0 = not scanned, 1 = scanned, 2 = indexed, 3 = error
+  flag: number; // 0 = not scanned, 1 = scanned, 2 = indexed, 3 = error
   fileCount: number;
   ssotGenerated: boolean;
-  lastScan: number;    // timestamp
-  lastAccess: number;  // timestamp
-  editorType: string;  // jetbrains, vscode, cursor, mcp-client, etc.
+  lastScan: number; // timestamp
+  lastAccess: number; // timestamp
+  editorType: string; // jetbrains, vscode, cursor, mcp-client, etc.
 }
 
 const directoryIndexDb = new Map<string, DirectoryIndex>();
 
 function loadDirectoryIndex(): void {
   try {
-    const indexPath = path.join(process.cwd(), '.zombiecoder', 'directory-index.json');
+    const indexPath = path.join(
+      process.cwd(),
+      ".zombiecoder",
+      "directory-index.json",
+    );
     if (fs.existsSync(indexPath)) {
-      const raw = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+      const raw = JSON.parse(fs.readFileSync(indexPath, "utf-8"));
       for (const [key, value] of Object.entries(raw)) {
         directoryIndexDb.set(key, value as DirectoryIndex);
       }
-      console.log(`📂 Loaded ${directoryIndexDb.size} directory entries from index`);
+      console.log(
+        `📂 Loaded ${directoryIndexDb.size} directory entries from index`,
+      );
     }
   } catch (err: any) {
-    console.warn('Failed to load directory index:', err?.message);
+    console.warn("Failed to load directory index:", err?.message);
   }
 }
 
 function saveDirectoryIndex(): void {
   try {
-    const dir = path.join(process.cwd(), '.zombiecoder');
+    const dir = path.join(process.cwd(), ".zombiecoder");
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    const indexPath = path.join(dir, 'directory-index.json');
+    const indexPath = path.join(dir, "directory-index.json");
     const obj: Record<string, DirectoryIndex> = {};
     for (const [key, value] of directoryIndexDb) {
       obj[key] = value;
     }
-    fs.writeFileSync(indexPath, JSON.stringify(obj, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(indexPath, JSON.stringify(obj, null, 2) + "\n", "utf8");
   } catch (err: any) {
-    console.warn('Failed to save directory index:', err?.message);
+    console.warn("Failed to save directory index:", err?.message);
   }
 }
 
-function updateDirectoryFlag(dirPath: string, flag: number, extra?: Partial<DirectoryIndex>): void {
+function updateDirectoryFlag(
+  dirPath: string,
+  flag: number,
+  extra?: Partial<DirectoryIndex>,
+): void {
   const existing = directoryIndexDb.get(dirPath);
   const entry: DirectoryIndex = {
     directory: dirPath,
@@ -77,7 +94,7 @@ function updateDirectoryFlag(dirPath: string, flag: number, extra?: Partial<Dire
     ssotGenerated: existing?.ssotGenerated || false,
     lastScan: existing?.lastScan || 0,
     lastAccess: Date.now(),
-    editorType: existing?.editorType || 'unknown',
+    editorType: existing?.editorType || "unknown",
     ...extra,
   };
   directoryIndexDb.set(dirPath, entry);
@@ -87,12 +104,17 @@ function updateDirectoryFlag(dirPath: string, flag: number, extra?: Partial<Dire
 // ═══════════════════════════════════════════════════════════════════════════════
 // Auto-index: scan directory, count files, generate/update SSOT
 // ═══════════════════════════════════════════════════════════════════════════════
-async function autoIndexDirectory(dirPath: string, editorType: string = 'server'): Promise<void> {
+async function autoIndexDirectory(
+  dirPath: string,
+  editorType: string = "server",
+): Promise<void> {
   const entry = directoryIndexDb.get(dirPath);
-  
+
   // Skip if already indexed within last 5 minutes
-  if (entry && entry.flag === 2 && (Date.now() - entry.lastScan < 300000)) {
-    console.log(`⏭️  Skipping ${dirPath} — already indexed ${Math.round((Date.now() - entry.lastScan) / 60000)}m ago`);
+  if (entry && entry.flag === 2 && Date.now() - entry.lastScan < 300000) {
+    console.log(
+      `⏭️  Skipping ${dirPath} — already indexed ${Math.round((Date.now() - entry.lastScan) / 60000)}m ago`,
+    );
     return;
   }
 
@@ -101,9 +123,16 @@ async function autoIndexDirectory(dirPath: string, editorType: string = 'server'
 
   try {
     // Count files (skip node_modules, .git, dist)
-    const skipDirs = new Set(['node_modules', '.git', 'dist', 'build', '.zombiecoder', '__pycache__']);
+    const skipDirs = new Set([
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      ".zombiecoder",
+      "__pycache__",
+    ]);
     let fileCount = 0;
-    
+
     function countFiles(dir: string, depth: number = 0): void {
       if (depth > 8) return;
       try {
@@ -117,9 +146,11 @@ async function autoIndexDirectory(dirPath: string, editorType: string = 'server'
             fileCount++;
           }
         }
-      } catch { /* skip inaccessible dirs */ }
+      } catch {
+        /* skip inaccessible dirs */
+      }
     }
-    
+
     countFiles(dirPath);
     console.log(`  📁 Found ${fileCount} files in ${dirPath}`);
 
@@ -127,7 +158,11 @@ async function autoIndexDirectory(dirPath: string, editorType: string = 'server'
     try {
       const rag = new DiskRAGService();
       await rag.setWorkingDirectory(dirPath, { autoInit: true });
-      updateDirectoryFlag(dirPath, 2, { fileCount, ssotGenerated: true, lastScan: Date.now() });
+      updateDirectoryFlag(dirPath, 2, {
+        fileCount,
+        ssotGenerated: true,
+        lastScan: Date.now(),
+      });
       console.log(`  ✅ SSOT generated for ${dirPath}`);
     } catch (ragErr: any) {
       console.warn(`  ⚠️ SSOT generation failed: ${ragErr?.message}`);
@@ -143,39 +178,40 @@ async function autoIndexDirectory(dirPath: string, editorType: string = 'server'
 // Startup: scan all known directories and re-index stale ones
 // ═══════════════════════════════════════════════════════════════════════════════
 async function startupDirectoryScan(): Promise<void> {
-  console.log('\n📋 Startup directory scan...');
-  
+  console.log("\n📋 Startup directory scan...");
+
   // Re-index all previously known directories
   const entries = Array.from(directoryIndexDb.entries());
   for (const [dirPath, entry] of entries) {
     if (entry.flag >= 1 && entry.lastScan > 0) {
       // Re-scan if older than 1 hour
       if (Date.now() - entry.lastScan > 3600000) {
-        console.log(`  🔄 Re-indexing stale: ${dirPath} (last: ${new Date(entry.lastScan).toLocaleString()})`);
+        console.log(
+          `  🔄 Re-indexing stale: ${dirPath} (last: ${new Date(entry.lastScan).toLocaleString()})`,
+        );
         await autoIndexDirectory(dirPath, entry.editorType);
       } else {
-        console.log(`  ✅ ${dirPath} — flag=${entry.flag}, files=${entry.fileCount}, age=${Math.round((Date.now() - entry.lastScan) / 60000)}m`);
+        console.log(
+          `  ✅ ${dirPath} — flag=${entry.flag}, files=${entry.fileCount}, age=${Math.round((Date.now() - entry.lastScan) / 60000)}m`,
+        );
       }
     }
   }
-  
-  // Also scan common project directories
-  const scanDirs = [
-    process.cwd(),
-    path.join(process.cwd(), 'src'),
-    path.join(process.cwd(), 'src', 'LangChainAgent'),
-  ];
-  
-  for (const dir of scanDirs) {
-    if (fs.existsSync(dir) && !directoryIndexDb.has(dir)) {
-      await autoIndexDirectory(dir, 'server-startup');
-    }
-  }
-  
-  console.log(`📊 Directory index: ${directoryIndexDb.size} entries\n`);
+
+  // NOTE: We do NOT scan process.cwd() or any hardcoded subdirectories at startup.
+  // .zombiecoder/ is ONLY created when a client connects via MCP and sends their
+  // workspaceFolder/rootUri. See mcpController.ts (method === 'initialize') and
+  // agentController.ts (ensureActiveClientDirectory).
+  // Hardcoded scans would create .zombiecoder/ in the wrong directory (the server's
+  // working dir) instead of the client's actual project directory.
+
+  console.log(`📊 Directory index: ${directoryIndexDb.size} entries (from connected clients)\n`);
 }
 
-function buildRuntimeManifest(workspaceDir: string, serverPort: string | number) {
+function buildRuntimeManifest(
+  workspaceDir: string,
+  serverPort: string | number,
+) {
   return {
     workspaceRoot: workspaceDir,
     server: {
@@ -184,31 +220,29 @@ function buildRuntimeManifest(workspaceDir: string, serverPort: string | number)
       sseUrl: `http://localhost:${serverPort}/sse`,
     },
     editorConfigs: {
-      vscode: 'mcp/editor-configs/vscode-mcp.json',
-      zed: 'mcp/editor-configs/zed-settings.json',
-      windsurf: 'mcp/editor-configs/windsurf-mcp_config.json',
-      jetbrains: 'mcp/editor-configs/jetbrains-mcp.json',
+      vscode: "mcp/editor-configs/vscode-mcp.json",
+      zed: "mcp/editor-configs/zed-settings.json",
+      windsurf: "mcp/editor-configs/windsurf-mcp_config.json",
+      jetbrains: "mcp/editor-configs/jetbrains-mcp.json",
     },
     updatedAt: new Date().toISOString(),
   };
 }
 
-function writeRuntimeManifest(workspaceDir: string, serverPort: string | number) {
+function writeRuntimeManifest(
+  workspaceDir: string,
+  serverPort: string | number,
+) {
   const manifest = buildRuntimeManifest(workspaceDir, serverPort);
   const locations: string[] = [];
 
-  // 1. Workspace root: /home/sahon/mcp/.zombiecoder/runtime.json
-  locations.push(path.join(workspaceDir, '.zombiecoder'));
+  // Only write runtime manifest to the workspace root directory.
+  // No hardcoded paths — the workspace directory comes from MCP client initialize params
+  // or from the environment. See: mcpController.ts (method === 'initialize')
+  locations.push(path.join(workspaceDir, ".zombiecoder"));
 
-  // 2. MCP config dir (where mcp.json was found): /home/sahon/mcp/proxi_new/mcp/.zombiecoder/runtime.json
   if (MCP_CONFIG_DIR) {
     locations.push(MCP_CONFIG_DIR);
-  }
-
-  // 3. Current working dir as fallback: process.cwd()/mcp/.zombiecoder/runtime.json
-  const cwdMcpDir = path.join(process.cwd(), 'mcp', '.zombiecoder');
-  if (!locations.includes(cwdMcpDir)) {
-    locations.push(cwdMcpDir);
   }
 
   for (const dir of locations) {
@@ -216,10 +250,17 @@ function writeRuntimeManifest(workspaceDir: string, serverPort: string | number)
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      const runtimePath = path.join(dir, 'runtime.json');
-      fs.writeFileSync(runtimePath, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+      const runtimePath = path.join(dir, "runtime.json");
+      fs.writeFileSync(
+        runtimePath,
+        JSON.stringify(manifest, null, 2) + "\n",
+        "utf8",
+      );
     } catch (err: any) {
-      console.warn(`Failed to write runtime manifest to ${dir}:`, err?.message || err);
+      console.warn(
+        `Failed to write runtime manifest to ${dir}:`,
+        err?.message || err,
+      );
     }
   }
 }
@@ -227,40 +268,52 @@ function writeRuntimeManifest(workspaceDir: string, serverPort: string | number)
 const app = express();
 const PORT = process.env.PORT || 9999;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const CORS_ORIGINS = (process.env.CORS_ORIGINS || '*').split(',').map(s => s.trim());
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || "*")
+  .split(",")
+  .map((s) => s.trim());
 
 if (!GROQ_API_KEY) {
-  console.warn('WARNING: GROQ_API_KEY not set — server will run in degraded mode');
+  console.warn(
+    "WARNING: GROQ_API_KEY not set — server will run in degraded mode",
+  );
 }
 
 // CORS: reflect origin for credentials mode (wildcard + credentials = broken)
 const ALLOWED_HOSTS = new Set([
-  'localhost', '127.0.0.1', '0.0.0.0',
-  'smartearningplatformbd.net', 'api.smartearningplatformbd.net',
-  'o.smartearningplatformbd.net', 'vs.smartearningplatformbd.net',
+  "localhost",
+  "127.0.0.1",
+  "0.0.0.0",
+  "zombiecoder.my.id",
+  "api.zombiecoder.my.id",
+  "o.zombiecoder.my.id",
+  "vs.zombiecoder.my.id",
 ]);
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (curl, server-to-server)
-    if (!origin) return callback(null, true);
-    try {
-      const url = new URL(origin);
-      const hostname = url.hostname;
-      // Always allow localhost ports
-      if (hostname === 'localhost' || hostname === '127.0.0.1') return callback(null, true);
-      // Check allowed hosts
-      if (ALLOWED_HOSTS.has(hostname)) return callback(null, true);
-      // Check env CORS_ORIGINS
-      if (CORS_ORIGINS.includes('*') || CORS_ORIGINS.includes(origin)) return callback(null, true);
-      callback(null, false);
-    } catch {
-      callback(null, true);
-    }
-  },
-  credentials: true,
-}));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, server-to-server)
+      if (!origin) return callback(null, true);
+      try {
+        const url = new URL(origin);
+        const hostname = url.hostname;
+        // Always allow localhost ports
+        if (hostname === "localhost" || hostname === "127.0.0.1")
+          return callback(null, true);
+        // Check allowed hosts
+        if (ALLOWED_HOSTS.has(hostname)) return callback(null, true);
+        // Check env CORS_ORIGINS
+        if (CORS_ORIGINS.includes("*") || CORS_ORIGINS.includes(origin))
+          return callback(null, true);
+        callback(null, false);
+      } catch {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  }),
+);
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(loggingMiddleware);
 // Load identity manifest early and attach identity headers to responses
 loadIdentity();
@@ -268,20 +321,20 @@ app.use(identityMiddleware);
 
 // /health is implemented in routes/index.ts (includes model/service stats)
 
-app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-app.use(['/v1', '/api', '/dashboard', '/db'], authenticate);
+app.use(["/v1", "/api", "/dashboard", "/db"], authenticate);
 
 app.use(routes);
 
 async function start() {
-  const service = initializeService(GROQ_API_KEY || '');
+  const service = initializeService(GROQ_API_KEY || "");
   // Initialize Agent & RAG system
   // Preference order for workspace dir: editor mcp config -> env WORKSPACE_DIR -> process.cwd()
   function findMcpConfig(): string | null {
     let dir = process.cwd();
     for (let i = 0; i < 6; i++) {
-      const candidate = path.join(dir, 'mcp', 'mcp.json');
+      const candidate = path.join(dir, "mcp", "mcp.json");
       if (fs.existsSync(candidate)) return candidate;
       const parent = path.dirname(dir);
       if (parent === dir) break;
@@ -292,14 +345,16 @@ async function start() {
 
   function resolveWorkspaceFromConfig(configPath: string): string | null {
     try {
-      const raw = fs.readFileSync(configPath, 'utf-8');
+      const raw = fs.readFileSync(configPath, "utf-8");
       const parsed = JSON.parse(raw);
-      const workspaceRoot = path.resolve(path.dirname(configPath), '..');
-      let candidate = parsed.workspaceDir || parsed.workspace || '';
+      const workspaceRoot = path.resolve(path.dirname(configPath), "..");
+      let candidate = parsed.workspaceDir || parsed.workspace || "";
       if (!candidate) return null;
-      if (typeof candidate !== 'string') return null;
-      candidate = candidate.replace('${workspaceFolder}', workspaceRoot).trim();
-      return path.isAbsolute(candidate) ? candidate : path.resolve(workspaceRoot, candidate);
+      if (typeof candidate !== "string") return null;
+      candidate = candidate.replace("${workspaceFolder}", workspaceRoot).trim();
+      return path.isAbsolute(candidate)
+        ? candidate
+        : path.resolve(workspaceRoot, candidate);
     } catch (e) {
       return null;
     }
@@ -309,8 +364,10 @@ async function start() {
   let DEFAULT_WORKSPACE = process.env.WORKSPACE_DIR || process.cwd();
   if (mcpConfigPath) {
     // Store the MCP config directory for runtime manifest writing
-    MCP_CONFIG_DIR = path.join(path.dirname(mcpConfigPath), '.zombiecoder');
-    console.log(`📁 MCP config found: ${mcpConfigPath} → runtime will write to ${MCP_CONFIG_DIR}`);
+    MCP_CONFIG_DIR = path.join(path.dirname(mcpConfigPath), ".zombiecoder");
+    console.log(
+      `📁 MCP config found: ${mcpConfigPath} → runtime will write to ${MCP_CONFIG_DIR}`,
+    );
     const resolved = resolveWorkspaceFromConfig(mcpConfigPath);
     if (resolved) {
       DEFAULT_WORKSPACE = resolved;
@@ -318,26 +375,44 @@ async function start() {
     // Watch the mcp config for runtime changes and apply updates
     try {
       fs.watch(mcpConfigPath, { persistent: false }, async (ev) => {
-        if (ev === 'change' || ev === 'rename') {
+        if (ev === "change" || ev === "rename") {
           const newResolved = resolveWorkspaceFromConfig(mcpConfigPath);
           if (newResolved && newResolved !== DEFAULT_WORKSPACE) {
-            console.log('Detected update to mcp/mcp.json workspaceDir ->', newResolved);
+            console.log(
+              "Detected update to mcp/mcp.json workspaceDir ->",
+              newResolved,
+            );
             DEFAULT_WORKSPACE = newResolved;
             try {
               const rag = getRagService();
               if (rag) {
-                await rag.setWorkingDirectory(DEFAULT_WORKSPACE, { autoInit: true });
+                await rag.setWorkingDirectory(DEFAULT_WORKSPACE, {
+                  autoInit: true,
+                });
                 // start a watcher for this directory to keep SSOT up-to-date
                 try {
                   const localRag = new DiskRAGService();
-                  await localRag.setWorkingDirectory(DEFAULT_WORKSPACE, { autoInit: true });
-                  startWorkspaceWatcher({ directory: DEFAULT_WORKSPACE, rag: localRag, index: undefined, workspaceId: 'auto' });
+                  await localRag.setWorkingDirectory(DEFAULT_WORKSPACE, {
+                    autoInit: true,
+                  });
+                  startWorkspaceWatcher({
+                    directory: DEFAULT_WORKSPACE,
+                    rag: localRag,
+                    index: undefined,
+                    workspaceId: "auto",
+                  });
                 } catch (e: any) {
-                  console.warn('Failed to start watcher for updated workspace:', e?.message || e);
+                  console.warn(
+                    "Failed to start watcher for updated workspace:",
+                    e?.message || e,
+                  );
                 }
               }
             } catch (e: any) {
-              console.warn('Applying updated workspace failed:', e?.message || e);
+              console.warn(
+                "Applying updated workspace failed:",
+                e?.message || e,
+              );
             }
           }
         }
@@ -361,7 +436,7 @@ async function start() {
   try {
     await connectMcpServer();
   } catch (err: any) {
-    console.warn('⚠️ MCP server connection failed:', err?.message || err);
+    console.warn("⚠️ MCP server connection failed:", err?.message || err);
   }
 
   await service.initialize();
@@ -369,50 +444,52 @@ async function start() {
   // Bootstrap providers from environment variables
   try {
     const bootstrap = await bootstrapProviders();
-    console.log(`✅ Provider bootstrap: ${bootstrap.discovered} providers, ${bootstrap.synced} models, ${bootstrap.toolsRegistered} tools`);
+    console.log(
+      `✅ Provider bootstrap: ${bootstrap.discovered} providers, ${bootstrap.synced} models, ${bootstrap.toolsRegistered} tools`,
+    );
   } catch (err: any) {
-    console.warn('⚠️ Provider bootstrap failed:', err?.message || err);
+    console.warn("⚠️ Provider bootstrap failed:", err?.message || err);
   }
 
   writeRuntimeManifest(DEFAULT_WORKSPACE, PORT);
   cleanupOldLogs();
   setInterval(cleanupOldLogs, 3600000);
   // Update runtime.json every 5 minutes with current timestamp
-  setInterval(() => writeRuntimeManifest(DEFAULT_WORKSPACE, PORT), 5 * 60 * 1000);
+  setInterval(
+    () => writeRuntimeManifest(DEFAULT_WORKSPACE, PORT),
+    5 * 60 * 1000,
+  );
   const agentSvc = getAgentService();
-  const persona = agentSvc?.getPersonaName() || 'ZombieCoder';
+  const persona = agentSvc?.getPersonaName() || "ZombieCoder";
 
   app.listen(PORT, () => {
     const models = service.getModels();
-    const tunnelEnabled = process.env.TUNNEL_ENABLED === 'true';
+    const tunnelEnabled = process.env.TUNNEL_ENABLED === "true";
     const lines = [
-      '='.repeat(58),
-      '  ZombieCoder Proxi Bridge',
-      '='.repeat(58),
+      "=".repeat(58),
+      "  ZombieCoder Proxi Bridge",
+      "=".repeat(58),
       `  Server:      http://localhost:${PORT}`,
       `  Models:      ${models.length} available`,
       `  Auth:        Optional (auto-uses env GROQ_API_KEY)`,
-      `  CORS:        ${CORS_ORIGINS.slice(0, 3).join(', ')}...`,
-      '',
+      `  CORS:        ${CORS_ORIGINS.slice(0, 3).join(", ")}...`,
+      "",
     ];
-    
+
     if (tunnelEnabled) {
       lines.push(
-        '  🌐 Cloudflare Tunnel Routes:',
-        `  📡 ${process.env.TUNNEL_OCODE_URL || 'https://o.smartearningplatformbd.net'} → localhost:${PORT} (Bridge)`,
-        `  📡 ${process.env.TUNNEL_API_URL || 'https://api.smartearningplatformbd.net'} → localhost:5001 (API)`,
-        `  📡 ${process.env.TUNNEL_VSCODE_URL || 'https://vs.smartearningplatformbd.net'} → localhost:5050 (VS Code)`,
-        '',
+        "  🌐 Cloudflare Tunnel Routes:",
+        `  📡 ${process.env.TUNNEL_OCODE_URL || "https://o.zombiecoder.my.id"} → localhost:${PORT} (Bridge)`,
+        `  📡 ${process.env.TUNNEL_API_URL || "https://api.zombiecoder.my.id"} → localhost:5001 (API)`,
+        `  📡 ${process.env.TUNNEL_VSCODE_URL || "https://vs.zombiecoder.my.id"} → localhost:5050 (VS Code)`,
+        "",
       );
     } else {
-      lines.push(
-        '  🏠 Local-only mode (tunnel disabled)',
-        '',
-      );
+      lines.push("  🏠 Local-only mode (tunnel disabled)", "");
     }
-    
+
     lines.push(
-      '  Endpoints:',
+      "  Endpoints:",
       `  POST /v1/chat/completions    - Chat (tools, vision, JSON mode, streaming)`,
       `  POST /v1/completions         - Text completions (legacy)`,
       `  POST /v1/audio/transcriptions  - Speech-to-text`,
@@ -420,10 +497,10 @@ async function start() {
       `  POST /v1/embeddings          - Text embeddings`,
       `  GET  /v1/models              - List models`,
       `  GET  /v1/models/:id          - Get model`,
-      '',
-      `  ${'='.repeat(52)}`,
+      "",
+      `  ${"=".repeat(52)}`,
       `  🌟 ZombieCoder Agent System (${persona})`,
-      `  ${'='.repeat(52)}`,
+      `  ${"=".repeat(52)}`,
       `  POST /v1/agent/chat          - Agent chat (RAG + Persona + Tool calling)`,
       `  POST /v1/agent/directory     - Set working directory (auto-index)`,
       `  POST /v1/agent/permission    - Grant/deny permission`,
@@ -434,39 +511,39 @@ async function start() {
       `  GET  /v1/agent/index         - Directory index status`,
       `  POST /v1/agent/register      - Register editor directory`,
       `  GET  /v1/agent/clients       - Connected clients status`,
-      '',
-      '  Features:',
-      '  - Full OpenAI format pass-through (tools, streaming, images)',
-      '  - Smart auto model routing based on input',
-      '  - Per-model rate limit management',
-      '  - Real-time dashboard & logging',
-      '  - Disk-based RAG (SSOT.md) - single source of truth',
-      '  - ZombieCoder agent persona with identity anchoring',
-      '  - Auto directory indexing on editor connect',
-      '  - Database flag tracking for scanned/indexed dirs',
-      '  - Cloudflare tunnel remote access enabled',
-      '  - No vendor lock-in - use any OpenAI-compatible client',
-      '='.repeat(58),
+      "",
+      "  Features:",
+      "  - Full OpenAI format pass-through (tools, streaming, images)",
+      "  - Smart auto model routing based on input",
+      "  - Per-model rate limit management",
+      "  - Real-time dashboard & logging",
+      "  - Disk-based RAG (SSOT.md) - single source of truth",
+      "  - ZombieCoder agent persona with identity anchoring",
+      "  - Auto directory indexing on editor connect",
+      "  - Database flag tracking for scanned/indexed dirs",
+      "  - Cloudflare tunnel remote access enabled",
+      "  - No vendor lock-in - use any OpenAI-compatible client",
+      "=".repeat(58),
     );
-    console.log(lines.join('\n'));
+    console.log(lines.join("\n"));
   });
 }
 
 // Cleanup on shutdown
-process.on('SIGINT', async () => {
-  console.log('\n🛑 Shutting down...');
+process.on("SIGINT", async () => {
+  console.log("\n🛑 Shutting down...");
   stopClientTracker();
   await disconnectMcpServer();
   process.exit(0);
 });
 
-process.on('SIGTERM', async () => {
+process.on("SIGTERM", async () => {
   stopClientTracker();
   await disconnectMcpServer();
   process.exit(0);
 });
 
-start().catch(err => {
-  console.error('Failed to start server:', err);
+start().catch((err) => {
+  console.error("Failed to start server:", err);
   process.exit(1);
 });

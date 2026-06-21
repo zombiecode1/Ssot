@@ -1,0 +1,25 @@
+{
+  "_comment": "Cursor MCP Configuration for ZombieCoder — Global Setup",
+  "_usage": "Copy to ~/.cursor/mcp.json (global) or .cursor/mcp.json (project-level). Auto-detects workspaceFolder as rootDirectory.",
+
+  "mcpServers": {
+    "zombiecoder-http": {
+      "type": "http",
+      "url": "http://localhost:9999/mcp",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "_description": "Connect to running ZombieCoder Proxi Bridge (port 9999) — auto-discovers tools, RAG, identity"
+    },
+    "zombiecoder-stdio": {
+      "command": "node",
+      "args": ["dist/mcp/server-entry.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "WORKSPACE_DIR": "${workspaceFolder}",
+        "ZOMBIECODER_MCP": "1"
+      },
+      "_description": "Spawn MCP server directly (standalone mode, no bridge needed)"
+    }
+  }
+}
